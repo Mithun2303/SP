@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refactoring & Design Smells — Exam Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Sora:wght@300;400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0d0f17;
+    --surface: #141720;
+    --card: #1a1f2e;
+    --border: #252d42;
+    --accent1: #7c6aff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --accent5: #06b6d4;
+    --text: #e2e8f0;
+    --muted: #7a8499;
+    --code-bg: #0a0c14;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* HEADER */
+  .hero {
+    background: linear-gradient(135deg, #0d0f17 0%, #1a1030 50%, #0d1a2a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(124,106,255,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(0,212,170,0.08) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(124,106,255,0.15);
+    border: 1px solid rgba(124,106,255,0.4);
+    color: var(--accent1);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #00d4aa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 14px;
+    position: relative;
+  }
+
+  /* NAV */
+  .toc {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .toc a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .toc a:hover { color: var(--text); border-color: var(--accent1); background: rgba(124,106,255,0.1); }
+
+  /* LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* SECTION HEADERS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 56px 0 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .section-header .ppt-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .card.purple::before { background: linear-gradient(90deg, var(--accent1), #a78bfa); }
+  .card.green::before { background: linear-gradient(90deg, var(--accent2), #34d399); }
+  .card.red::before { background: linear-gradient(90deg, var(--accent3), #f97316); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--accent4), #fb923c); }
+  .card.blue::before { background: linear-gradient(90deg, var(--accent5), #6366f1); }
+
+  .card h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .smell-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.07);
+    color: var(--muted);
+  }
+
+  /* DEFINITION BOX */
+  .def {
+    background: rgba(124,106,255,0.08);
+    border-left: 3px solid var(--accent1);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    color: #c4b5fd;
+  }
+
+  /* POINTS */
+  ul.points {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  ul.points li {
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text);
+  }
+  ul.points li::before {
+    content: '▸';
+    color: var(--accent2);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* GRID LAYOUTS */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+  /* MINI CARD */
+  .mini-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .mini-card h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent4);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .mini-card p, .mini-card li { font-size: 13px; color: #94a3b8; }
+
+  /* CODE */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    overflow-x: auto;
+    color: #a5f3fc;
+    margin: 12px 0;
+    line-height: 1.6;
+  }
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  /* BEFORE/AFTER */
+  .ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .ba-grid { grid-template-columns: 1fr; } }
+  .ba-grid pre:first-child { border-color: rgba(255,107,107,0.4); }
+  .ba-grid pre:last-child { border-color: rgba(0,212,170,0.4); color: #6ee7b7; }
+
+  /* IMPACT BOX */
+  .impact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .impact-chip {
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .impact-chip.bad { background: rgba(255,107,107,0.15); color: #fca5a5; border: 1px solid rgba(255,107,107,0.3); }
+  .impact-chip.cause { background: rgba(251,209,102,0.12); color: #fde68a; border: 1px solid rgba(251,209,102,0.3); }
+  .impact-chip.fix { background: rgba(0,212,170,0.12); color: #6ee7b7; border: 1px solid rgba(0,212,170,0.3); }
+
+  /* ALIAS */
+  .alias { font-size: 12px; color: var(--muted); margin-top: 12px; font-style: italic; }
+  .alias strong { color: var(--accent4); font-style: normal; }
+
+  /* QUOTE */
+  .quote {
+    background: rgba(6,182,212,0.07);
+    border-left: 3px solid var(--accent5);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #67e8f9;
+    margin: 12px 0;
+    font-style: italic;
+  }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: rgba(255,255,255,0.05); color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; font-size: 11px; }
+  td { padding: 10px 14px; border-top: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+
+  /* HIGHLIGHT */
+  .highlight { color: var(--accent4); font-weight: 700; }
+  .highlight-g { color: var(--accent2); font-weight: 700; }
+  .highlight-p { color: var(--accent1); font-weight: 700; }
+  .highlight-r { color: var(--accent3); font-weight: 700; }
+
+  /* EXAM TIP */
+  .exam-tip {
+    background: rgba(251,209,102,0.07);
+    border: 1px solid rgba(251,209,102,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .exam-tip .icon { flex-shrink: 0; font-size: 16px; }
+  .exam-tip p { color: #fde68a; }
+
+  /* PPT dividers */
+  .ppt-divider {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 0;
+    margin-bottom: 8px;
+  }
+
+  h4.sub { font-size: 14px; font-weight: 700; color: var(--accent2); margin: 16px 0 8px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">Software Patterns — Exam Ready</div>
+  <h1>Refactoring & Design Smells<br>Complete Study Guide</h1>
+  <p>All topics from all 3 PPTs + Book (Girish Suryanarayana et al.) · Every topic · Every example</p>
+</div>
+
+<nav class="toc">
+  <a href="#tech-debt">Technical Debt</a>
+  <a href="#design-smells-intro">Design Smells Intro</a>
+  <a href="#abstraction-smells">Abstraction Smells</a>
+  <a href="#encapsulation-smells">Encapsulation Smells</a>
+  <a href="#modularization-smells">Modularization Smells</a>
+  <a href="#hierarchy-smells">Hierarchy Smells</a>
+  <a href="#arch-refactoring">Architectural Refactoring</a>
+  <a href="#simplifying-cond">Simplifying Conditionals</a>
+  <a href="#method-calls">Making Method Calls Simpler</a>
+  <a href="#generalization">Dealing with Generalization</a>
+</nav>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PPT 4: TECHNICAL DEBT + DESIGN SMELLS INTRO           -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="ppt-divider">📄 Team 4 PPT</div>
+
+<div class="section-header" id="tech-debt">
+  <div class="section-icon" style="background:rgba(255,107,107,0.15);">💸</div>
+  <h2>Technical Debt</h2>
+  <span class="ppt-label" style="background:rgba(255,107,107,0.15);color:#fca5a5;">PPT 4</span>
+</div>
+
+<div class="card red">
+  <h3>What is Technical Debt?</h3>
+  <div class="def">Technical debt is the debt that accrues when you <strong>knowingly or unknowingly</strong> make wrong or non-optimal design decisions. — Ward Cunningham (coined the metaphor)</div>
+  <p style="font-size:14px;color:var(--muted);">Like financial debt — you take a shortcut (principal) and pay interest later through harder maintenance.</p>
+  <div class="impact-row">
+    <span class="impact-chip cause">Code Debt — static analysis violations, inconsistent style</span>
+    <span class="impact-chip cause">Design Debt — design smells, rule violations</span>
+    <span class="impact-chip cause">Test Debt — lack of tests / coverage</span>
+    <span class="impact-chip cause">Documentation Debt — missing/outdated docs</span>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="card red">
+    <h3>Defect vs Technical Debt</h3>
+    <ul class="points">
+      <li><strong>Defects</strong> — visible to users, get immediate attention</li>
+      <li><strong>Tech Debt</strong> — largely invisible, receives little attention</li>
+    </ul>
+  </div>
+  <div class="card red">
+    <h3>Components of Tech Debt</h3>
+    <ul class="points">
+      <li><strong>Principal</strong> — the original hack/shortcut</li>
+      <li><strong>Interest</strong> — accumulated cost of not fixing it (compound in nature)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card red">
+  <h3>Impact on Cost of Change (CoC)</h3>
+  <ul class="points">
+    <li>Well-maintained system: actual CoC ≈ optimal CoC</li>
+    <li>As tech debt increases → CoC increases</li>
+    <li>Extreme case → <span class="highlight-r">"Technical Bankruptcy"</span> (CoC becomes prohibitively high)</li>
+  </ul>
+</div>
+
+<div class="card red">
+  <h3>What Causes Technical Debt?</h3>
+  <div class="impact-row">
+    <span class="impact-chip cause">Schedule Pressure</span>
+    <span class="impact-chip cause">Lack of skilled designer</span>
+    <span class="impact-chip cause">No design principles</span>
+    <span class="impact-chip cause">Unaware of design smells</span>
+  </div>
+  <h4 class="sub">How to Manage?</h4>
+  <ul class="points">
+    <li>Increasing awareness of technical debt</li>
+    <li>Detecting and repaying technical debt (refactoring)</li>
+    <li>Prevent accumulation of technical debt</li>
+  </ul>
+</div>
+
+<div class="card red">
+  <h3>📦 Case Study 1: The 12-Year-Old Product</h3>
+  <ul class="points">
+    <li>Medium company, 12-year-old monolithic client-server system under upgrade pressure</li>
+    <li><strong>Debt found:</strong> No client/server separation, tight coupling, no interfaces, poor encapsulation</li>
+    <li><strong>Resistance:</strong> Fear of breakage, no awareness of tech debt, original devs left</li>
+    <li><strong>Strategy:</strong> Refactor one critical part; Boy Scout Rule — clean code as you add features</li>
+    <li><strong>Outcome:</strong> 6-month delay, fewer features, but cleaner foundation for future (avoided bankruptcy)</li>
+  </ul>
+</div>
+
+<div class="card red">
+  <h3>⚡ Real Example: Knight Capital — $460 Million Bug (2012)</h3>
+  <ul class="points">
+    <li><strong>Debt:</strong> Deprecated 8-year-old "Power Peg" code was never deleted</li>
+    <li><strong>Trigger:</strong> Deployment script failed to update one of 8 servers</li>
+    <li><strong>Result:</strong> Old code activated → <span class="highlight-r">$10M loss/minute</span> → company went from $1.5B valuation to acquired for $1.4M in 48 hours</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- DESIGN SMELLS INTRO               -->
+<!-- ══════════════════════════════════ -->
+<div class="section-header" id="design-smells-intro">
+  <div class="section-icon" style="background:rgba(124,106,255,0.15);">🔍</div>
+  <h2>Design Smells — Introduction</h2>
+  <span class="ppt-label" style="background:rgba(124,106,255,0.15);color:#c4b5fd;">PPT 4 + Book</span>
+</div>
+
+<div class="card purple">
+  <h3>What Are Design Smells?</h3>
+  <div class="def">Structures in design that indicate <strong>violation of fundamental design principles</strong> and negatively impact design quality.</div>
+  <div class="impact-row">
+    <span class="impact-chip cause">Structural Indicators (not bugs)</span>
+    <span class="impact-chip cause">Symptom, not Cause</span>
+    <span class="impact-chip bad">Maintainability Killers</span>
+  </div>
+  <h4 class="sub">Key Quality Attributes Impacted</h4>
+  <div class="impact-row">
+    <span class="impact-chip fix">Understandability</span>
+    <span class="impact-chip fix">Reliability</span>
+    <span class="impact-chip fix">Changeability</span>
+    <span class="impact-chip fix">Extensibility</span>
+    <span class="impact-chip fix">Reusability</span>
+    <span class="impact-chip fix">Testability</span>
+  </div>
+</div>
+
+<div class="card purple">
+  <h3>PHAME Classification Framework</h3>
+  <div class="def">Hierarchical classification based on Booch's object model. Maps every smell to the specific design principle it violates.</div>
+  <div class="grid2" style="margin-top:12px;">
+    <div class="mini-card"><h4>P — Principle of Abstraction</h4><p>Simplification of entities — reduction and generalization</p></div>
+    <div class="mini-card"><h4>H — Principle of Hierarchy</h4><p>Organizing types using meaningful classification</p></div>
+    <div class="mini-card"><h4>A — Principle of Abstraction (naming)</h4><p>Two-word naming: Adjective + Principle</p></div>
+    <div class="mini-card"><h4>M — Modularization</h4><p>Cohesive and loosely coupled abstractions</p></div>
+    <div class="mini-card"><h4>E — Encapsulation</h4><p>Separation of interface and implementation</p></div>
+  </div>
+  <div class="exam-tip"><span class="icon">💡</span><p><strong>Naming scheme:</strong> Adjective + Principle e.g. "Broken Modularization", "Deficient Encapsulation", "Missing Abstraction"</p></div>
+</div>
+
+<div class="card purple">
+  <h3>Causes of Design Smells</h3>
+  <div class="grid2">
+    <div class="mini-card"><h4>Principle Violation</h4><p>E.g. java.util.Calendar violates SRP → Multifaceted Abstraction</p></div>
+    <div class="mini-card"><h4>Inappropriate Pattern Use</h4><p>Patterns misapplied → over-engineering / Class Bloat</p></div>
+    <div class="mini-card"><h4>Language Limitations</h4><p>Java generics don't support primitives → duplicate code → Unfactored Hierarchy</p></div>
+    <div class="mini-card"><h4>Procedural Thinking in OOP</h4><p>Thinking "doing" not "being" → Imperative Abstraction, Missing Hierarchy</p></div>
+    <div class="mini-card"><h4>Viscosity</h4><p>Software viscosity: correct fix takes too long; Environment viscosity: slow tools/processes</p></div>
+    <div class="mini-card"><h4>Non-Adherence to Best Practices</h4><p>Leaving composite refactoring halfway → structural inconsistencies</p></div>
+  </div>
+</div>
+
+<div class="card purple">
+  <h3>Documenting a Smell (Template)</h3>
+  <div class="grid2">
+    <ul class="points">
+      <li>Name & Description</li>
+      <li>Rationale</li>
+      <li>Potential Causes</li>
+      <li>Example</li>
+    </ul>
+    <ul class="points">
+      <li>Suggested Refactoring</li>
+      <li>Impacted Quality Attributes</li>
+      <li>Aliases</li>
+      <li>Practical Considerations</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- ABSTRACTION SMELLS               -->
+<!-- ══════════════════════════════════ -->
+<div class="section-header" id="abstraction-smells">
+  <div class="section-icon" style="background:rgba(0,212,170,0.15);">🧩</div>
+  <h2>Abstraction Smells (7 Types)</h2>
+  <span class="ppt-label" style="background:rgba(0,212,170,0.15);color:#6ee7b7;">PPT 4</span>
+</div>
+
+<!-- 3.1 Missing Abstraction -->
+<div class="card green">
+  <h3>3.1 Missing Abstraction <span class="smell-tag">PHAME: A</span></h3>
+  <div class="def">Clumps of data or encoded strings are used <strong>instead of creating a class or interface</strong>. Violates: crisp conceptual boundaries & unique identity.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Inadequate design analysis / tight deadlines</li>
+        <li>Lack of refactoring as requirements evolve</li>
+        <li>Misguided performance focus (arrays over objects)</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Examples</h4>
+      <ul class="points">
+        <li><strong>ISBN</strong> stored as string → duplicated validation everywhere</li>
+        <li><strong>Data Clumps:</strong> x1,y1,x2,y2 always together → needs a Rectangle class</li>
+        <li><strong>Stack trace</strong> stored as string → clients depend on fixed format</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Refactoring</h4>
+  <ul class="points">
+    <li>Create a class when: validation is needed, constructors/formatting required, resource handling needed</li>
+    <li>Not every primitive needs abstraction — avoid over-engineering</li>
+  </ul>
+  <div class="impact-row">
+    <span class="impact-chip bad">↓ Understandability</span>
+    <span class="impact-chip bad">↓ Changeability</span>
+    <span class="impact-chip bad">↓ Reusability</span>
+    <span class="impact-chip bad">↓ Reliability</span>
+  </div>
+  <div class="alias"><strong>Aliases:</strong> Primitive Obsession, Data Clumps</div>
+</div>
+
+<!-- 3.2 Imperative Abstraction -->
+<div class="card green">
+  <h3>3.2 Imperative Abstraction <span class="smell-tag">PHAME: A</span></h3>
+  <div class="def">An <strong>operation is represented as a class</strong> instead of a method. Classes should represent entities, not actions.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Procedural thinking in OOP</li>
+        <li>One-method classes = actions not entities</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Examples</h4>
+      <ul class="points">
+        <li>Classes: CreateReport, CopyReport, DisplayReport → should all be methods in a Report class</li>
+        <li>Classes: OffsetCalculator, SaveHandler → merge into ImagePair class</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip"><span class="icon">💡</span><p><strong>When acceptable (Reification):</strong> Command Pattern, Strategy Pattern, State Pattern — converting behavior to objects intentionally is fine</p></div>
+  <div class="alias"><strong>Alias:</strong> Operation Class</div>
+</div>
+
+<!-- 3.3 Incomplete Abstraction -->
+<div class="card green">
+  <h3>3.3 Incomplete Abstraction <span class="smell-tag">PHAME: A</span></h3>
+  <div class="def">Abstraction fails to provide <strong>complementary or interrelated methods</strong>, forcing clients to work around missing functionality.</div>
+  <ul class="points">
+    <li>Example: class has <code>initialize()</code> but no <code>dispose()</code></li>
+    <li><strong>Real Example (Java Swing):</strong> ButtonModel has <code>setGroup()</code> but no <code>getGroup()</code>. Fixed in JDK 1.3 by adding <code>getGroup()</code> to DefaultButtonModel.</li>
+  </ul>
+  <h4 class="sub">Causes</h4>
+  <ul class="points">
+    <li>Missing overall perspective — focused only on immediate needs</li>
+    <li>Language convention overlooked (e.g. missing hashCode() when equals() is defined in Java)</li>
+    <li>Architecture docs specify creation but omit deletion</li>
+  </ul>
+  <div class="impact-row">
+    <span class="impact-chip bad">Encapsulation Violation</span>
+    <span class="impact-chip bad">Reduced Cohesion</span>
+    <span class="impact-chip bad">SRP Violation</span>
+  </div>
+</div>
+
+<!-- 3.4 Multifaceted Abstraction -->
+<div class="card green">
+  <h3>3.4 Multifaceted Abstraction <span class="smell-tag">PHAME: A</span></h3>
+  <div class="def">A single class is assigned <strong>multiple responsibilities</strong>. Violates: Single Responsibility Principle (SRP).</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>General-purpose names (Node, Component, Element) become catch-all</li>
+        <li>Evolution without periodic refactoring → "blobs"</li>
+        <li>Viscosity — avoiding creating a new class</li>
+        <li>Mixing domain logic with presentation</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Real Example</h4>
+      <ul class="points">
+        <li><strong>java.util.Calendar</strong> — handles both date AND time: 2825 lines, 67 methods, 71 fields!</li>
+        <li>Led to creation of Joda-Time library</li>
+        <li>Java 8 introduced java.time as replacement</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Refactoring — Extract Class</h4>
+  <ul class="points">
+    <li>Identify logical clusters of methods/fields, apply "Extract Class"</li>
+    <li>Example: Image class (120 public methods, 50,000+ lines) → refactored into ImageLoader, ImageRenderer, ImageProcessor, ImageWriter</li>
+  </ul>
+</div>
+
+<!-- 3.5 Unnecessary Abstraction -->
+<div class="card green">
+  <h3>3.5 Unnecessary Abstraction <span class="smell-tag">PHAME: A</span></h3>
+  <div class="def">An abstraction that is <strong>not actually needed</strong> gets introduced — trivial or no meaningful responsibility. Violates YAGNI principle.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Procedural thinking — classes that "do" not "be"</li>
+        <li>Constant interfaces in Java (abuse of interface)</li>
+        <li>Over-engineering</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Real Examples (JDK)</h4>
+      <ul class="points">
+        <li><strong>java.util.FormattableFlags</strong> — class holding 3 integer constants (should be enum)</li>
+        <li><strong>javax.swing.WindowConstants</strong> — interface holding 4 constants (constant interface anti-pattern)</li>
+        <li><strong>BestSellerBook</strong> class that only delegates all calls to Book — no unique behavior</li>
+      </ul>
+    </div>
+  </div>
+  <div class="impact-row">
+    <span class="impact-chip bad">↓ Understandability</span>
+    <span class="impact-chip bad">↓ Reusability</span>
+  </div>
+</div>
+
+<!-- 3.6 Unutilized Abstraction -->
+<div class="card green">
+  <h3>3.6 Unutilized Abstraction <span class="smell-tag">PHAME: A</span></h3>
+  <div class="def">An abstraction is <strong>left unused</strong> — not directly used or not reachable.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Two Forms</h4>
+      <ul class="points">
+        <li><strong>Unreferenced abstractions</strong> — concrete classes used by nobody</li>
+        <li><strong>Orphan abstractions</strong> — standalone interfaces/abstract classes with no derived abstractions</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Speculative design (future-proofing)</li>
+        <li>Changing requirements (old abstraction no longer needed)</li>
+        <li>Leftover garbage during maintenance</li>
+        <li>Fear of breaking code</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Real Examples</h4>
+  <ul class="points">
+    <li><strong>sun.misc.Service (JDK 1.3)</strong> → became unused after java.util.ServiceLoader (JDK 1.6). Removed in JDK 9.</li>
+    <li>Custom concurrent utilities became unused after java.util.concurrent arrived (JDK 1.5)</li>
+    <li>Visualization tool — report-generation hierarchy created speculatively, never implemented (Orphan)</li>
+  </ul>
+  <h4 class="sub">Refactoring</h4>
+  <ul class="points">
+    <li>Simplest fix: <strong>Delete the abstraction entirely</strong></li>
+    <li>For public APIs: mark <code>@Deprecated</code> instead of removing immediately</li>
+  </ul>
+  <div class="alias"><strong>Aliases:</strong> Unused classes, Speculative generality</div>
+</div>
+
+<!-- 3.7 Duplicate Abstraction -->
+<div class="card green">
+  <h3>3.7 Duplicate Abstraction <span class="smell-tag">PHAME: A</span></h3>
+  <div class="def">Two or more abstractions have <strong>identical names or identical implementation</strong> or both.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Two Forms</h4>
+      <ul class="points">
+        <li><strong>Identical Name</strong> — same names, may share behavior (confusing)</li>
+        <li><strong>Identical Implementation</strong> — semantically identical member definitions not factored together (code clones)</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Copy-paste programming / AI-generated code not understood</li>
+        <li>Ad hoc maintenance over years</li>
+        <li>Lack of communication between teams</li>
+        <li>Final class needs extension → duplicate created</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Real Examples</h4>
+  <ul class="points">
+    <li><strong>Same Name:</strong> Three Timer classes in JDK — javax.swing.Timer, java.util.Timer, javax.management.timer.Timer. Same description → confusing for beginners.</li>
+    <li><strong>Same Name:</strong> java.util.Date and java.sql.Date — same name in different packages → import ambiguity</li>
+    <li><strong>Duplicate:</strong> Scanner class in eclipse.jdt.internal ≈ PublicScanner in eclipse.jdt.core — ~3500 lines identical</li>
+  </ul>
+  <h4 class="sub">Refactoring</h4>
+  <ul class="points">
+    <li>Same names → rename uniquely (e.g. javax.swing.Timer → EventTimer, javax.management.timer.Timer → AlarmTimer)</li>
+    <li>Same implementation → remove one, or factor common code into a parent class</li>
+    <li>java.sql.Date → rename to java.sql.SQLDate; convert inheritance to delegation (wrap java.util.Date)</li>
+  </ul>
+  <div class="alias"><strong>Aliases:</strong> Alternative classes with different interfaces, Duplicate design artifacts</div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- ENCAPSULATION SMELLS              -->
+<!-- ══════════════════════════════════ -->
+<div class="section-header" id="encapsulation-smells">
+  <div class="section-icon" style="background:rgba(6,182,212,0.15);">🔒</div>
+  <h2>Encapsulation Smells (4 Types)</h2>
+  <span class="ppt-label" style="background:rgba(6,182,212,0.15);color:#67e8f9;">PPT 4</span>
+</div>
+
+<div class="card blue">
+  <h3>Principle of Encapsulation</h3>
+  <div class="def">Advocates <strong>separation of concerns</strong> — interface and implementation. Hide "how" and expose only "what".</div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="mini-card"><h4>Hide Implementation Details</h4><p>Expose what the abstraction offers, not how it is implemented. Internal representation and algorithms should be hidden.</p></div>
+    <div class="mini-card"><h4>Hide Variations</h4><p>Hide implementation variations in types or hierarchies. Makes changes easier without impacting clients.</p></div>
+  </div>
+</div>
+
+<!-- 4.1 Deficient Encapsulation -->
+<div class="card blue">
+  <h3>4.1 Deficient Encapsulation <span class="smell-tag">PHAME: E</span></h3>
+  <div class="def">Declared accessibility of members is <strong>more permissive than actually required</strong> (e.g. public fields that should be private).</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Easier testability — making private methods public</li>
+        <li>Procedural thinking — treating data as global variables</li>
+        <li>Quick-fix delivery pressure shortcuts</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Examples</h4>
+      <ul class="points">
+        <li><strong>Point class</strong> — public x, y fields; should be private with getters/setters</li>
+        <li><strong>JDK 7:</strong> 508 classes with at least one public field; PNGMetadata has 85+ public fields!</li>
+        <li><strong>SizeRequirements.alignment</strong> — public, so alignment validation can't be enforced</li>
+        <li><strong>System.out, System.err, System.in</strong> — public final fields (global variables) locked in forever</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Refactoring for System.out Example</h4>
+  <ul class="points">
+    <li>Introduce a Console abstraction wrapping stream details</li>
+    <li>Java 1.6 did this → java.io.Console with reader()/writer() methods</li>
+  </ul>
+  <div class="exam-tip"><span class="icon">💡</span><p><strong>Performance myth:</strong> Developers believe direct field access is faster — but JIT compilers inline accessor methods, making the difference negligible.</p></div>
+</div>
+
+<!-- 4.2 Leaky Encapsulation -->
+<div class="card blue">
+  <h3>4.2 Leaky Encapsulation <span class="smell-tag">PHAME: E</span></h3>
+  <div class="def">Abstraction <strong>exposes or leaks implementation details</strong> through its public interface (methods reveal internal data structures or algorithms).</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Lack of awareness of what should be hidden</li>
+        <li>Fine-grained interface exposing internal details</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Examples</h4>
+      <ul class="points">
+        <li><strong>TodoList.getListEntries()</strong> returns LinkedList → exposes internal data structure; clients can mutate it; changing to ArrayList breaks clients</li>
+        <li><strong>CustomListBox.bubbleSort()</strong> — method name reveals algorithm. If changed to quickSort, must rename and break clients OR keep misleading name</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Refactoring</h4>
+  <ul class="points">
+    <li>Return deep copy instead of reference</li>
+    <li>Return immutable object</li>
+    <li>Return base type: return <code>List</code> or <code>Collection</code> not <code>LinkedList</code></li>
+    <li>Return Iterator if traversal is the goal</li>
+    <li>Rename bubbleSort() → sort() (algorithm-agnostic name)</li>
+  </ul>
+</div>
+
+<!-- 4.3 Missing Encapsulation -->
+<div class="card blue">
+  <h3>4.3 Missing Encapsulation <span class="smell-tag">PHAME: E</span></h3>
+  <div class="def">Client is tightly coupled to <strong>different variations of a service</strong>. New variations cause <strong>class explosion</strong>. Violates Open-Closed Principle (OCP).</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Lack of awareness of OCP</li>
+        <li>Lack of refactoring as requirements change</li>
+        <li>Mixing up concerns (orthogonal concerns merged)</li>
+        <li>Naive design: creating a class for every combination</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Example (Encryption)</h4>
+      <ul class="points">
+        <li>Encryption class with DES hard-coded</li>
+        <li>Add AES → class grows, hard to maintain</li>
+        <li>Add TDES + Image/Text content → class explosion</li>
+        <li><strong>Fix:</strong> Strategy pattern — encapsulate algorithm variation separately</li>
+      </ul>
+    </div>
+  </div>
+  <div class="impact-row">
+    <span class="impact-chip bad">↓ Understandability</span>
+    <span class="impact-chip bad">↓ Changeability</span>
+    <span class="impact-chip bad">↓ Reusability</span>
+  </div>
+</div>
+
+<!-- 4.4 Unexploited Encapsulation -->
+<div class="card blue">
+  <h3>4.4 Unexploited Encapsulation <span class="smell-tag">PHAME: E</span></h3>
+  <div class="def">Client code uses <strong>explicit type checks</strong> (if-else/switch on object type) instead of exploiting polymorphism already encapsulated in a hierarchy.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Procedural thinking — switch/if for behavior selection</li>
+        <li>Lack of firm grasp of OOP principles</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Example</h4>
+      <ul class="points">
+        <li>ColorModel uses switch on DataBuffer types to call getPixel()/getSize()</li>
+        <li>Fix: define getPixel() and getSize() in DataBuffer hierarchy; reduce switch to two polymorphic calls</li>
+      </ul>
+    </div>
+  </div>
+  <div class="impact-row">
+    <span class="impact-chip bad">↓ Changeability</span>
+    <span class="impact-chip bad">↓ Reusability</span>
+    <span class="impact-chip bad">↓ Testability</span>
+    <span class="impact-chip bad">↓ Reliability</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PPT 5: MODULARIZATION + HIERARCHY + ARCH REFACTORING  -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="ppt-divider">📄 Team 5 PPT</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- MODULARIZATION SMELLS             -->
+<!-- ══════════════════════════════════ -->
+<div class="section-header" id="modularization-smells">
+  <div class="section-icon" style="background:rgba(124,106,255,0.15);">📦</div>
+  <h2>Modularization Smells (4 Types)</h2>
+  <span class="ppt-label" style="background:rgba(124,106,255,0.15);color:#c4b5fd;">PPT 5</span>
+</div>
+
+<div class="card purple">
+  <h3>Principle of Modularization</h3>
+  <div class="def">Create cohesive and loosely coupled abstractions through <strong>localization and decomposition</strong>.</div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="mini-card"><h4>Localize Related Data & Methods</h4><p>Each class owns its data and the methods that operate on it.</p></div>
+    <div class="mini-card"><h4>Decompose to Manageable Size</h4><p>Break large abstractions into smaller focused ones. Avoid fragmentation and bloat.</p></div>
+    <div class="mini-card"><h4>Create Acyclic Dependencies</h4><p>Dependency graphs must be cycle-free. Cycles cause ripple effects.</p></div>
+    <div class="mini-card"><h4>Limit Dependencies (Fan-in & Fan-out)</h4><p>Low fan-in = fewer clients break on change. Low fan-out = less exposure to others' changes.</p></div>
+  </div>
+</div>
+
+<!-- Broken Modularization -->
+<div class="card purple">
+  <h3>1. Broken Modularization <span class="smell-tag">Violates: Localize related data & methods</span></h3>
+  <div class="def">Data and/or methods that should be in one abstraction are <strong>scattered across multiple abstractions</strong> → tight coupling.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Procedural thinking in OOP</li>
+        <li>Lack of knowledge of existing design</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Example (DeviceData / Device)</h4>
+      <ul class="points">
+        <li>DeviceData holds only fields (no methods)</li>
+        <li>Device holds all methods + a DeviceData reference</li>
+        <li>Data and behavior are split across 2 classes</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ba-grid">
+    <pre>// BEFORE (Broken)
+class DeviceData {
+    public String deviceId;
+    public String devicePath;
+    public boolean enabled;
+}
+class Device {
+    DeviceData data; // owns data
+    String getDevicePath(String id) {...}
+    boolean isEnabled() {...}
+}</pre>
+    <pre>// AFTER (Fixed)
+class Device {
+    private String deviceId;
+    private String devicePath;
+    private boolean enabled;
+
+    public String getDevicePath() {...}
+    public boolean setDevicePath(String p){...}
+    public boolean isEnabled() {...}
+}</pre>
+  </div>
+  <h4 class="sub">Refactoring Techniques</h4>
+  <ul class="points">
+    <li><strong>Convert Procedural Design to Objects</strong></li>
+    <li><strong>Move Method</strong> — if Class A's method is used more by Class B</li>
+    <li><strong>Move Field</strong> — if Class A's field is used more by Class B</li>
+  </ul>
+  <div class="impact-row">
+    <span class="impact-chip bad">↓ Understandability</span>
+    <span class="impact-chip bad">↓ Changeability</span>
+    <span class="impact-chip bad">↓ Reusability</span>
+    <span class="impact-chip bad">↓ Reliability</span>
+  </div>
+</div>
+
+<!-- Insufficient Modularization -->
+<div class="card purple">
+  <h3>2. Insufficient Modularization <span class="smell-tag">Violates: Decompose to manageable size</span></h3>
+  <div class="def">Abstraction has <strong>not been completely decomposed</strong> — too large or too complex.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Two Forms</h4>
+      <ul class="points">
+        <li><strong>Bloated Interface</strong> — too many members (methods/fields)</li>
+        <li><strong>Bloated Implementation</strong> — too many methods or one method with excessive complexity</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Providing centralized control</li>
+        <li>Creating large classes for multiple clients</li>
+        <li>Grouping all related functionality together</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Examples</h4>
+  <ul class="points">
+    <li><strong>Bloated Implementation:</strong> java.net.SocketPermission — Cyclomatic Complexity 193; getMask() method alone has CC=81</li>
+    <li><strong>Bloated Both:</strong> java.awt.Component — 332 methods, 11 nested/inner classes, 107 fields. Tries to handle Events, Layout, Focus, Fonts all in one class.</li>
+  </ul>
+  <h4 class="sub">Refactoring</h4>
+  <div class="grid2">
+    <div class="mini-card"><h4>Bloated Interface</h4><ul class="points"><li>Extract Cohesive Subsets → separate class</li><li>Interface Segregation Principle (ISP)</li></ul></div>
+    <div class="mini-card"><h4>Bloated Implementation</h4><ul class="points"><li>Simplify with helper functions</li><li>Encapsulate each responsibility separately</li></ul></div>
+  </div>
+</div>
+
+<!-- Cyclically-Dependent Modularization -->
+<div class="card purple">
+  <h3>3. Cyclically-Dependent Modularization <span class="smell-tag">Violates: Acyclic dependencies</span></h3>
+  <div class="def">Two or more abstractions depend on each other — <strong>directly (A↔B) or indirectly (A→B→C→A)</strong>.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Key Concepts</h4>
+      <ul class="points">
+        <li><strong>Cycle</strong> — start at abstraction A, return to A through dependencies</li>
+        <li><strong>Tangle</strong> — multiple cycles, complex tightly coupled design</li>
+        <li><strong>Ripple Effect</strong> — change in A cascades back to A</li>
+        <li>Modules must be understood, changed, tested, reused together</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Improper responsibility realization</li>
+        <li>Passing self reference (this) instead of data</li>
+        <li>Poor call-back implementation</li>
+        <li>Hard-to-visualize indirect dependencies</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Examples</h4>
+  <ul class="points">
+    <li><strong>Example 1:</strong> SecureDocument ↔ DESEncryption — SecureDocument calls encrypt(), passes "this", DESEncryption uses it to access content → cycle</li>
+    <li><strong>Example 2:</strong> Image ↔ Encryption in medical app — Image passes "this" to encrypt(), Encryption accesses image content → cycle</li>
+  </ul>
+  <h4 class="sub">Refactoring (Breaking Cycles)</h4>
+  <div class="grid2">
+    <div class="mini-card"><h4>1. Introduce Interface</h4><p>DESEncryption implements IEncryption; SecureDocument depends on IEncryption not concrete class. AESEncryption can now be added without changing SecureDocument.</p></div>
+    <div class="mini-card"><h4>2. Remove Unnecessary Dependency</h4><p>Eliminate avoidable dependency — use Move Method / Move Field</p></div>
+    <div class="mini-card"><h4>3. Move Code to New Abstraction</h4><p>Move SecurityManager to handle interaction between Image and Encryption. Image no longer depends on Encryption.</p></div>
+    <div class="mini-card"><h4>4. Merge Abstractions</h4><p>If both represent a single concept, combine into one class</p></div>
+  </div>
+  <div class="alias"><strong>Aliases:</strong> Dependency Cycles, Cyclic Dependencies, Bidirectional Relation, Cyclic Class Relationships</div>
+</div>
+
+<!-- Hub-like Modularization -->
+<div class="card purple">
+  <h3>4. Hub-like Modularization <span class="smell-tag">Violates: Limit dependencies</span></h3>
+  <div class="def">An abstraction has <strong>too many incoming AND outgoing dependencies</strong> — looks like a hub.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Types of Dependencies</h4>
+      <ul class="points">
+        <li><strong>Incoming (Fan-in)</strong> — many classes depend on this abstraction</li>
+        <li><strong>Outgoing (Fan-out)</strong> — this abstraction depends on many others</li>
+      </ul>
+      <h4 class="sub" style="margin-top:12px">Causes</h4>
+      <ul class="points">
+        <li>Improper responsibility assignment (too many roles)</li>
+        <li>"Dump-all" utility classes (e.g. SwingUtilities)</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Example</h4>
+      <ul class="points">
+        <li><strong>java.awt.Font</strong> — used for rendering text as glyphs on Graphics, Component</li>
+        <li>Incoming: 19 classes depend on Font</li>
+        <li>Outgoing: 34 classes used by Font</li>
+        <li>Result: High coupling, complex to maintain</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Refactoring</h4>
+  <ul class="points">
+    <li><strong>Split Responsibilities</strong> — divide class with multiple roles into smaller ones</li>
+    <li><strong>Move Misplaced Members</strong> — shift methods/fields to appropriate abstractions</li>
+    <li><strong>Chain of Responsibility Pattern</strong> — connect receivers in a chain, hub notifies only the first</li>
+  </ul>
+  <div class="alias"><strong>Aliases:</strong> Bottlenecks, Local Hubs, Man-in-the-Middle</div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- HIERARCHY SMELLS                   -->
+<!-- ══════════════════════════════════ -->
+<div class="section-header" id="hierarchy-smells">
+  <div class="section-icon" style="background:rgba(255,107,107,0.15);">🌲</div>
+  <h2>Hierarchy Smells (8 Types)</h2>
+  <span class="ppt-label" style="background:rgba(255,107,107,0.15);color:#fca5a5;">PPT 5</span>
+</div>
+
+<div class="card red">
+  <h3>Enabling Techniques for Hierarchy</h3>
+  <div class="grid2" style="margin-top:8px">
+    <div class="mini-card"><h4>Apply Meaningful Classification</h4><p>Identify commonalities & differences; classify supertypes and subtypes in levels</p></div>
+    <div class="mini-card"><h4>Apply Meaningful Generalization</h4><p>Extract common behaviors from subtypes to reduce code duplication</p></div>
+    <div class="mini-card"><h4>Ensure Substitutability</h4><p>Liskov Substitution Principle — supertype reference can be replaced with subtype object without altering behavior; enables dynamic polymorphism</p></div>
+    <div class="mini-card"><h4>Avoid Redundant Paths</h4><p>Subclass should not have multiple ways to inherit from same superclass (Diamond problem)</p></div>
+    <div class="mini-card"><h4>Ensure Proper Ordering</h4><p>Subtype knows about supertype, NOT the reverse. Reverse creates circular dependency.</p></div>
+  </div>
+</div>
+
+<!-- Missing Hierarchy -->
+<div class="card red">
+  <h3>1. Missing Hierarchy</h3>
+  <div class="def">Conditional logic or tagged type is used to <strong>manage variations explicitly</strong> instead of using a hierarchy (inheritance).</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Procedural approach — C-style encoded types with conditionals</li>
+        <li>Misguided simplistic design — switch seems simpler</li>
+        <li>Overlooking inheritance as a design technique</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Impact</h4>
+      <ul class="points">
+        <li>↓ Understandability — switch complexity</li>
+        <li>↓ Extensibility — new type = change all switch statements</li>
+        <li>↓ Reusability & Testability</li>
+        <li>↓ Reliability — must check all types</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ba-grid">
+    <pre>// BEFORE: Switch smell
+class Employee {
+    enum Type { ENGINEER, MANAGER, SALESMAN }
+    private Type type;
+    public double calculateBonus() {
+        switch (type) {
+            case ENGINEER: return salary * 0.1;
+            case MANAGER:  return salary * 0.2;
+            case SALESMAN: return salary * 0.15;
+        }
+    }
+}</pre>
+    <pre>// AFTER: Proper hierarchy
+abstract class Employee {
+    protected double salary;
+    public abstract double calculateBonus();
+}
+class Engineer extends Employee {
+    public double calculateBonus() { return salary * 0.1; }
+}
+class Manager extends Employee {
+    public double calculateBonus() { return salary * 0.2; }
+}</pre>
+  </div>
+</div>
+
+<!-- Unnecessary Hierarchy -->
+<div class="card red">
+  <h3>2. Unnecessary Hierarchy</h3>
+  <div class="def">Inheritance hierarchy is <strong>unnecessary</strong> — subclasses differ only in data, not behavior.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Subclasses instead of instantiating (differ only in data)</li>
+        <li>Taxonomy mania — overuse of inheritance</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Impact</h4>
+      <ul class="points">
+        <li>↓ Understandability — complicates design</li>
+        <li>↓ Extensibility — adding new types explodes hierarchy</li>
+        <li>↓ Testability — more effort for unnecessary types</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ba-grid">
+    <pre>// BEFORE: Subclasses for data only
+abstract class Coffee {
+    public abstract String getName();
+    public abstract double getPrice();
+}
+class Latte extends Coffee {
+    public String getName() { return "Latte"; }
+    public double getPrice() { return 3.50; }
+}
+class Espresso extends Coffee {
+    public String getName() { return "Espresso"; }
+    public double getPrice() { return 2.00; }
+}</pre>
+    <pre>// AFTER: Use instances, not subclasses
+class Coffee {
+    private String name;
+    private double price;
+    public Coffee(String name, double price) {
+        this.name = name; this.price = price;
+    }
+    public String getName() { return name; }
+    public double getPrice() { return price; }
+}
+// Usage: just create instances!
+Coffee latte = new Coffee("Latte", 3.50);
+Coffee espresso = new Coffee("Espresso", 2.00);</pre>
+  </div>
+</div>
+
+<!-- Unfactored Hierarchy -->
+<div class="card red">
+  <h3>3. Unfactored Hierarchy</h3>
+  <div class="def"><strong>Unnecessary duplication among types</strong> in a hierarchy. Violates DRY principle.</div>
+  <h4 class="sub">Two Types of Duplication</h4>
+  <div class="grid2">
+    <div class="mini-card"><h4>Type 1: Horizontal (Siblings)</h4><p>Same code in parallel branches — CreditCardPayment and PayPalPayment both have identical validate() method</p></div>
+    <div class="mini-card"><h4>Type 2: Vertical (Super/Sub)</h4><p>Redundant code between parent and child — child redefines what it already inherits. AbstractQueuedSynchronizer: 1,278 of 2,110 lines identical!</p></div>
+  </div>
+  <h4 class="sub">Three Forms</h4>
+  <div class="grid3">
+    <div class="mini-card"><h4>Form 1: Unfactored Interface</h4><p>Same method signatures in siblings but NOT declared in parent. Clients can't call polymorphically.</p></div>
+    <div class="mini-card"><h4>Form 2: Unfactored Implementation</h4><p>Identical method bodies in siblings. When logic changes, must update all copies.</p></div>
+    <div class="mini-card"><h4>Form 3: Both (Worst)</h4><p>Signature AND body identical — e.g. Rectangle and Rectangle2D both define identical outcode() method.</p></div>
+  </div>
+  <div class="exam-tip"><span class="icon">💡</span><p><strong>Key Example:</strong> Rectangle extends Rectangle2D, yet Rectangle ALSO defines outcode() with 20 lines of IDENTICAL code. Fix: delete from Rectangle, inherit from parent.</p></div>
+</div>
+
+<!-- Wide Hierarchy -->
+<div class="card red">
+  <h3>4. Wide Hierarchy</h3>
+  <div class="def">Superclass has <strong>excessive number of immediate children</strong>. Rule of thumb: >9 direct children = smell.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Symptoms</h4>
+      <ul class="points">
+        <li>Hierarchy depth = 1–2, width > 15</li>
+        <li>Children at inconsistent abstraction levels</li>
+        <li>No clear grouping or organization</li>
+        <li>Java example: EventObject has 36 direct children</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Example (Device System)</h4>
+      <ul class="points">
+        <li>Start: Device with 3–4 children</li>
+        <li>After 18 months: 30+ direct children (FireAlarm, Camera, Sensor, SmartLight, etc.)</li>
+        <li>Fix: Introduce AlarmDevice, VideoDevice, SensorDevice as intermediate classes</li>
+        <li>Now Device has 3 children, not 30+</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip"><span class="icon">💡</span><p><strong>Wide vs Unfactored:</strong> Unfactored = code duplication in siblings. Wide = too many immediate children, missing intermediate levels. Often BOTH occur together.</p></div>
+</div>
+
+<!-- Speculative Hierarchy -->
+<div class="card red">
+  <h3>5. Speculative Hierarchy</h3>
+  <div class="def">Types in hierarchy added based on <strong>imagined future needs</strong>, not real requirements. Violates YAGNI.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Future-proofing — designing for all possible changes</li>
+        <li>Over-engineering beyond what requirements demand</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Example</h4>
+      <ul class="points">
+        <li>Code analyzer tool only needs HTML reports</li>
+        <li>Designer speculatively adds AnnotatedReport class (no requirement, no plan)</li>
+        <li>Fix: Collapse Hierarchy — remove AnnotatedReport (served no real purpose)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="impact-row">
+    <span class="impact-chip bad">↓ Understandability</span>
+    <span class="impact-chip bad">↓ Testability</span>
+  </div>
+</div>
+
+<!-- Deep Hierarchy -->
+<div class="card red">
+  <h3>6. Deep Hierarchy</h3>
+  <div class="def">Inheritance hierarchy is <strong>excessively deep</strong>. Rule of thumb: deeper than 6 levels.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Excessive focus on reuse — creating intermediate types just to enable reuse</li>
+        <li>Speculative generalization — adding supertypes for imagined needs</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Problems</h4>
+      <ul class="points">
+        <li>Method near root overridden many times → meaning lost at leaf</li>
+        <li>Field in supertype shadowed by local variable in subtype</li>
+        <li>Leaf behavior very hard to predict</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Examples</h4>
+  <ul class="points">
+    <li><strong>SynthCheckBoxUI</strong> — long chain-like class hierarchy; leaf has 34 inherited methods; ButtonUI has NO members at all</li>
+    <li><strong>Control center app</strong> — every physical device = separate class, new device = new subclass; leaf objects inherited hundreds of unused fields (pre-initialized arrays); each object = hundreds of KBs → thousands of objects → app ran out of memory. Fix: restructure intermediate types so leaf classes only inherit what they need</li>
+  </ul>
+  <div class="impact-row">
+    <span class="impact-chip bad">↓ Understandability</span>
+    <span class="impact-chip bad">↓ Changeability</span>
+    <span class="impact-chip bad">↓ Testability</span>
+    <span class="impact-chip bad">↓ Reliability</span>
+    <span class="impact-chip bad">↓ Performance</span>
+  </div>
+</div>
+
+<!-- Rebellious Hierarchy -->
+<div class="card red">
+  <h3>7. Rebellious Hierarchy</h3>
+  <div class="def">Subtype <strong>rejects methods provided by its supertype</strong>. Violates Liskov Substitution Principle (LSP).</div>
+  <h4 class="sub">How Rejection Manifests</h4>
+  <div class="impact-row">
+    <span class="impact-chip bad">Throw UnsupportedOperationException</span>
+    <span class="impact-chip bad">Empty/NOP method body</span>
+    <span class="impact-chip bad">Print "should not implement"</span>
+    <span class="impact-chip bad">Return error value</span>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div>
+      <h4 class="sub">Causes</h4>
+      <ul class="points">
+        <li>Concrete class becomes hierarchy root → subtypes forced to reject inherited methods they don't need</li>
+        <li>"Swiss-knife" supertype — provides everything, specialized subtypes reject irrelevant parts</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="sub">Example (CallSite)</h4>
+      <ul class="points">
+        <li>CallSite has setTarget() and getTarget()</li>
+        <li>ConstantCallSite inherits setTarget() but doesn't need it (rejects it)</li>
+        <li><strong>Best Fix (Option 3):</strong> Introduce ChangeableCallSite as intermediate; MutableCallSite and VolatileCallSite extend it; setTarget() lives only there; ConstantCallSite no longer inherits it</li>
+      </ul>
+    </div>
+  </div>
+  <h4 class="sub">Refactoring Options</h4>
+  <ul class="points">
+    <li><strong>Move method down</strong> — move to subtypes that actually need it</li>
+    <li><strong>Remove method</strong> — if every subtype rejects it</li>
+    <li><strong>Introduce intermediate type</strong> — create middle class for subtypes that support the method</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- ARCHITECTURAL REFACTORING         -->
+<!-- ══════════════════════════════════ -->
+<div class="section-header" id="arch-refactoring">
+  <div class="section-icon" style="background:rgba(251,209,102,0.15);">🏗️</div>
+  <h2>Architectural Refactoring</h2>
+  <span class="ppt-label" style="background:rgba(251,209,102,0.15);color:#fde68a;">PPT 5</span>
+</div>
+
+<div class="card yellow">
+  <h3>Design Erosion</h3>
+  <div class="def">Gradual degradation of a software system's architecture due to continuous, <strong>unsystematic changes</strong> — causing a gap between intended design and actual implementation.</div>
+  <h4 class="sub">Consequences</h4>
+  <div class="impact-row">
+    <span class="impact-chip bad">Increased complexity</span>
+    <span class="impact-chip bad">Hard to modify/extend</span>
+    <span class="impact-chip bad">Higher bug risk</span>
+    <span class="impact-chip bad">Performance issues</span>
+    <span class="impact-chip bad">Expensive future rework</span>
+  </div>
+  <h4 class="sub">How to Avoid (Best Practices)</h4>
+  <ul class="points">
+    <li>Avoid big bang approach; adopt iterative development</li>
+    <li>Continuously reassess the architecture</li>
+    <li>Refactor regularly; avoid ad hoc modifications</li>
+    <li>Don't treat design decisions as permanent</li>
+    <li>Prevent accumulation of technical debt</li>
+  </ul>
+</div>
+
+<div class="card yellow">
+  <h3>Shallow vs Deep Architectural Refactoring</h3>
+  <div class="tbl-wrap" style="margin-top:12px">
+    <table>
+      <tr><th>Aspect</th><th>Shallow Refactoring</th><th>Deep Refactoring</th></tr>
+      <tr><td>Applied when</td><td>Architecture exists only as models/views</td><td>Architecture already implemented (has code)</td></tr>
+      <tr><td>Involves</td><td>Model refinement, modification of architectural design</td><td>Changes to models AND actual implementation (code)</td></tr>
+      <tr><td>Code changes</td><td>No implementation/code changes</td><td>Code refactoring along with architecture refactoring</td></tr>
+      <tr><td>Validation</td><td>Architecture assessment methods, tools and software metrics</td><td>Testing (ensure behavior unchanged), documentation, database schemas, reference architectures</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card yellow">
+  <h3>Architectural Smells</h3>
+  <ul class="points">
+    <li><strong>Duplicate Design Artifacts</strong> — Same responsibility in multiple components. Example: Two services both implement their own user authentication instead of sharing an auth module.</li>
+    <li><strong>Unclear Roles of Entities</strong> — Overlapping/poorly defined responsibilities. Example: UserManager and UserHandler doing similar things — developers confused about which to use.</li>
+    <li><strong>Design Violations</strong> — Breaking established architectural rules. Example: UI layer directly accessing database instead of going through service layer.</li>
+    <li><strong>Dependency Cycles</strong> — Components depend on each other circularly. Example: Service A → B → C → A</li>
+  </ul>
+  <div class="exam-tip"><span class="icon">💡</span><p><strong>Key reminder:</strong> All smells are suspicion, not proof. Always ask: "What is the system trying to achieve? Is this design choice justified?" — Smells = signals, not definitive defects.</p></div>
+</div>
+
+<div class="card yellow">
+  <h3>📦 Case Study: Airbnb Architecture Evolution</h3>
+  <div class="tbl-wrap" style="margin-top:12px">
+    <table>
+      <tr><th>Phase</th><th>Architecture</th><th>Problem</th></tr>
+      <tr><td>Phase 1</td><td>Monolithic Ruby on Rails (Monorail)</td><td>Scale issues as traffic grew</td></tr>
+      <tr><td>Phase 2</td><td>Service-Oriented Architecture — Data Service, Business Logic, Presentation, API Gateway</td><td>Clear ownership ✅ but eventually more complexity</td></tr>
+      <tr><td>Phase 3 (2017–2020)</td><td>Microservices Explosion — hundreds of small independent services</td><td>Hard to manage, complex dependencies, tracing requests difficult, team coordination overhead. <strong>Over-architecture!</strong></td></tr>
+      <tr><td>Phase 4</td><td>Hybrid (Micro + Macro Services) — related services merged into "macroservices"</td><td>Solved: API unification, clearer boundaries, reduced dependencies</td></tr>
+    </table>
+  </div>
+  <h4 class="sub">How Airbnb Refactored</h4>
+  <ul class="points">
+    <li>Regrouped services — merged overly fragmented components into cohesive units</li>
+    <li>Redefined service boundaries — clear ownership and responsibilities</li>
+    <li>Reduced unnecessary dependencies</li>
+    <li>Balanced flexibility and simplicity</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PPT 3: SIMPLIFYING CONDITIONALS + METHOD CALLS + GENERALIZATION -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="ppt-divider">📄 Team 3 PPT</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SIMPLIFYING CONDITIONALS          -->
+<!-- ══════════════════════════════════ -->
+<div class="section-header" id="simplifying-cond">
+  <div class="section-icon" style="background:rgba(0,212,170,0.15);">🔀</div>
+  <h2>Simplifying Conditional Expressions</h2>
+  <span class="ppt-label" style="background:rgba(0,212,170,0.15);color:#6ee7b7;">PPT 3</span>
+</div>
+
+<!-- Decompose Conditional -->
+<div class="card green">
+  <h3>1. Decompose Conditional</h3>
+  <div class="def">Extract methods from the condition, then-part, and else-part. <strong>Make logic readable without inspecting implementation.</strong></div>
+  <ul class="points">
+    <li>Complex conditionals increase method length, reduce clarity</li>
+    <li>Code shows what happens, not why — naming extracted methods exposes intent</li>
+    <li>Separate: the condition (decision) vs the actions (what happens)</li>
+  </ul>
+  <div class="ba-grid">
+    <pre>// BEFORE
+if (user.isActive() && !user.isBanned())
+    access = true;
+else
+    access = false;</pre>
+    <pre>// AFTER
+if (canAccess(user))
+    access = grantAccess();
+else
+    access = denyAccess();
+
+private boolean canAccess(User user) {
+    return user.isActive() && !user.isBanned();
+}</pre>
+  </div>
+</div>
+
+<!-- Consolidate Conditional Expression -->
+<div class="card green">
+  <h3>2. Consolidate Conditional Expression</h3>
+  <div class="def">Combine a sequence of conditional tests with the same result into <strong>a single conditional expression</strong>.</div>
+  <div class="ba-grid">
+    <pre>// BEFORE
+double calculateLoan(User u) {
+  if (u.income < 20000) return 0;
+  if (u.creditScore < 600) return 0;
+  if (u.hasCriminalRecord) return 0;
+  if (u.isVIP) {
+    if (u.yearsWithBank > 5)
+      return u.income * 10;
+  }
+  return u.income * 5;
+}</pre>
+    <pre>// AFTER
+double calculateLoan(User u) {
+  if (isHighRisk(u)) return 0;
+  if (isPremiumEligible(u)) return u.income * 10;
+  return u.income * 5;
+}
+boolean isHighRisk(User u) {
+  return u.income < 20000 ||
+         u.creditScore < 600 ||
+         u.hasCriminalRecord;
+}
+boolean isPremiumEligible(User u) {
+  return u.isVIP && u.yearsWithBank > 5;
+}</pre>
+  </div>
+</div>
+
+<!-- Consolidate Duplicate Conditional Fragments -->
+<div class="card green">
+  <h3>3. Consolidate Duplicate Conditional Fragments</h3>
+  <div class="def">Same code in every branch of an if/else doesn't belong inside the conditional — <strong>move it outside</strong>.</div>
+  <ul class="points">
+    <li>If duplicate at the end → move after conditional</li>
+    <li>If duplicate at the beginning → move before</li>
+    <li>If in middle → check dependencies, reposition safely, extract method if multiple lines</li>
+  </ul>
+  <div class="ba-grid">
+    <pre>// BEFORE
+if (order.isExpress()) {
+    shippingCost = 50;
+    updateInventory(order); // duplicate
+} else {
+    shippingCost = 20;
+    updateInventory(order); // duplicate
+}</pre>
+    <pre>// AFTER
+if (order.isExpress())
+    shippingCost = 50;
+else
+    shippingCost = 20;
+
+updateInventory(order); // moved outside</pre>
+  </div>
+</div>
+
+<!-- Remove Control Flag -->
+<div class="card green">
+  <h3>4. Remove Control Flag</h3>
+  <div class="def">Replace control flag variables (done, found, error) with <strong>break, continue, or return</strong>.</div>
+  <div class="grid2">
+    <div>
+      <h4 class="sub">Approach 1: break/continue</h4>
+      <div class="ba-grid" style="grid-template-columns:1fr">
+        <pre>// BEFORE
+boolean fraudDetected = false;
+for (Transaction t : transactions) {
+  if (!fraudDetected) {
+    if (t.amount > 10000) {
+      fraudDetected = true;
+    }
+  }
+}
+// AFTER
+for (Transaction t : transactions) {
+  if (t.amount > 10000) {
+    blockAccount(t.accountId);
+    break; // direct exit
+  }
+}</pre>
+      </div>
+    </div>
+    <div>
+      <h4 class="sub">Approach 2: return</h4>
+      <div class="ba-grid" style="grid-template-columns:1fr">
+        <pre>// BEFORE
+String error = "";
+for (User u : users) {
+  if (error.equals("")) {
+    if (u.age < 18) error = "Underage";
+  }
+}
+return error;
+// AFTER
+for (User u : users) {
+  if (u.age < 18) return "Underage";
+  if (!u.email.contains("@"))
+    return "Invalid Email";
+}
+return "";</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Replace Nested Conditional with Guard Clauses -->
+<div class="card green">
+  <h3>5. Replace Nested Conditional with Guard Clauses</h3>
+  <div class="def">Handle <strong>edge cases early with immediate exits</strong> to eliminate deep nesting. "If this rare case → exit immediately."</div>
+  <ul class="points">
+    <li>Nested if-else gives equal importance to all branches — misleading</li>
+    <li>Most branches are rare edge cases — guard clauses make this explicit</li>
+    <li>Reduces: indentation depth, cognitive load, hidden logic paths</li>
+    <li>Single exit point rule is NOT useful if it reduces clarity</li>
+  </ul>
+  <div class="ba-grid">
+    <pre>// BEFORE (deeply nested)
+double getPayAmount(Employee e) {
+  double result;
+  if (e.isActive()) {
+    if (!e.isSuspended()) {
+      if (!e.isOnLeave()) {
+        result = e.getSalary();
+      } else {
+        result = leavePay(e);
+      }
+    } else {
+      result = suspendedPay(e);
+    }
+  } else {
+    result = 0;
+  }
+  return result;
+}</pre>
+    <pre>// AFTER (guard clauses)
+double getPayAmount(Employee e) {
+  if (!e.isActive())    return 0;
+  if (e.isSuspended())  return suspendedPay(e);
+  if (e.isOnLeave())    return leavePay(e);
+  return e.getSalary();
+}</pre>
+  </div>
+</div>
+
+<!-- Replace Nested Conditional with Polymorphism -->
+<div class="card green">
+  <h3>6. Replace Nested Conditional with Polymorphism</h3>
+  <div class="def">When conditional chooses different behavior based on <strong>object type</strong> → use polymorphism instead.</div>
+  <ul class="points">
+    <li>Avoids explicit switch/if-else on types</li>
+    <li>Simplifies extensions — just create a new subclass</li>
+    <li>Eliminates duplicate switch statements repeated across methods</li>
+  </ul>
+  <div class="ba-grid">
+    <pre>// BEFORE: Switch on bird type
+double getSpeed() {
+  switch (_type) {
+    case EUROPEAN: return getBaseSpeed();
+    case AFRICAN:  return getBaseSpeed()
+                       - getLoadFactor()
+                       * _numberOfCoconuts;
+    case NORWEGIAN_BLUE:
+      return (_isNailed) ? 0 :
+             getBaseSpeed(_voltage);
+  }
+}</pre>
+    <pre>// AFTER: Polymorphic
+abstract class Bird {
+    abstract double getSpeed();
+}
+class European extends Bird {
+    double getSpeed() { return getBaseSpeed(); }
+}
+class African extends Bird {
+    double getSpeed() {
+        return getBaseSpeed() - getLoadFactor()
+               * _numberOfCoconuts;
+    }
+}</pre>
+  </div>
+</div>
+
+<!-- Introduce Null Object -->
+<div class="card green">
+  <h3>7. Introduce Null Object</h3>
+  <div class="def">Return a <strong>special null object with default behavior</strong> instead of returning null. Eliminates repetitive null checks.</div>
+  <ul class="points">
+    <li>Null object implements same interface as real object but provides neutral/default behavior</li>
+    <li>Eliminates "annoying" duplicate null checks throughout client code</li>
+    <li>Increases system stability — no NullPointerExceptions</li>
+  </ul>
+  <h4 class="sub">Example (Utility Site System)</h4>
+  <div class="ba-grid">
+    <pre>// BEFORE: Repeated null checks
+Customer c = site.getCustomer();
+BillingPlan plan;
+if (c == null) plan = BillingPlan.basic();
+else plan = c.getPlan();
+String name;
+if (c == null) name = "occupant";
+else name = c.getName();
+int weeks;
+if (c == null) weeks = 0;
+else weeks = c.getHistory()
+             .getWeeksDelinquent();</pre>
+    <pre>// AFTER: Null Object pattern
+class NullCustomer extends Customer {
+    public boolean isNull() { return true; }
+    public String getName() { return "occupant"; }
+    public BillingPlan getPlan() { return BillingPlan.basic(); }
+    public PaymentHistory getHistory() {
+        return PaymentHistory.newNull(); // also null object
+    }
+}
+// Client code — clean, no null checks:
+Customer c = site.getCustomer(); // returns NullCustomer if none
+BillingPlan plan = c.getPlan();
+String name = c.getName();
+int weeks = c.getHistory().getWeeksDelinquent();</pre>
+  </div>
+</div>
+
+<!-- Introduce Assertion -->
+<div class="card green">
+  <h3>8. Introduce Assertion</h3>
+  <div class="def">Make <strong>implicit assumptions explicit</strong> using assertion statements. Assertion failure = programmer error (bug), not runtime error.</div>
+  <ul class="points">
+    <li>Communication Aid — tells future developers what state is required</li>
+    <li>Debugging Tool — catches bugs early</li>
+    <li>Performance Safety — assertions can be disabled in production</li>
+    <li>Avoid side effects — assertions should only check state, not change it</li>
+  </ul>
+  <div class="ba-grid">
+    <pre>// BEFORE: Implicit assumption
+double getExpenseLimit() {
+    // Assumes one of these MUST be true
+    // but never states it!
+    return (_expenseLimit != NULL_EXPENSE) ?
+        _expenseLimit :
+        _primaryProject.getMemberExpenseLimit();
+}</pre>
+    <pre>// AFTER: Explicit assertion
+double getExpenseLimit() {
+    Assert.isTrue(
+        _expenseLimit != NULL_EXPENSE ||
+        _primaryProject != null
+    ); // Fails immediately if assumption broken!
+    return (_expenseLimit != NULL_EXPENSE) ?
+        _expenseLimit :
+        _primaryProject.getMemberExpenseLimit();
+}</pre>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- MAKING METHOD CALLS SIMPLER        -->
+<!-- ══════════════════════════════════ -->
+<div class="section-header" id="method-calls">
+  <div class="section-icon" style="background:rgba(124,106,255,0.15);">📞</div>
+  <h2>Making Method Calls Simpler</h2>
+  <span class="ppt-label" style="background:rgba(124,106,255,0.15);color:#c4b5fd;">PPT 3</span>
+</div>
+
+<div class="card purple">
+  <h3>Overview of Techniques</h3>
+  <div class="grid3">
+    <div class="mini-card"><h4>Rename Method</h4><p>Name should communicate intention — think: what would the comment say?</p></div>
+    <div class="mini-card"><h4>Add Parameter</h4><p>Method needs more info from caller. Watch out: long param lists are hard to remember.</p></div>
+    <div class="mini-card"><h4>Remove Parameter</h4><p>Parameter no longer used. Delete only if not part of an interface.</p></div>
+    <div class="mini-card"><h4>Separate Query from Modifier</h4><p>CQS Principle: A method either returns a value (query) OR changes state (command) — never both.</p></div>
+    <div class="mini-card"><h4>Parameterize Method</h4><p>Multiple similar methods with different values → merge into one with parameter. Removes duplication.</p></div>
+    <div class="mini-card"><h4>Replace Parameter with Explicit Methods</h4><p>Method runs different code based on enum param → provide separate methods instead. Adds compile-time checking.</p></div>
+    <div class="mini-card"><h4>Preserve Whole Object</h4><p>Passing individual values from an object → pass the whole object. Future-proof, more readable.</p></div>
+    <div class="mini-card"><h4>Replace Parameter with Method</h4><p>Receiver can compute the value itself → remove the parameter, let receiver call the method directly.</p></div>
+    <div class="mini-card"><h4>Introduce Parameter Object</h4><p>Same group of params always travel together → create a class. Add logic to the object (e.g. range.includes(date)).</p></div>
+    <div class="mini-card"><h4>Remove Setting Method</h4><p>Field should only be set at creation → remove setter, set in constructor, mark field final.</p></div>
+    <div class="mini-card"><h4>Hide Method</h4><p>Method not used outside class → change to private. Improves encapsulation, reduces complexity.</p></div>
+    <div class="mini-card"><h4>Replace Constructor with Factory Method</h4><p>When object creation needs flexibility — static factory method decides which object to create.</p></div>
+    <div class="mini-card"><h4>Encapsulate Downcast</h4><p>Move cast inside the method — return concrete type, not Object. Caller code becomes cleaner.</p></div>
+    <div class="mini-card"><h4>Replace Error Code with Exception</h4><p>Return value indicates error → throw exception instead. Separates normal logic from error handling.</p></div>
+    <div class="mini-card"><h4>Replace Exception with Test</h4><p>Exception used for normal conditions → check condition upfront with if statement. Exceptions = exceptional situations only.</p></div>
+  </div>
+</div>
+
+<!-- Key Details for Method Calls -->
+<div class="card purple">
+  <h3>Replace Constructor with Factory Method — 3 Variants</h3>
+  <div class="grid3">
+    <div class="mini-card"><h4>Variant 1: Subclasses via Switch</h4><p>✅ Subclasses hidden from clients, type-safe at compile time<br>❌ Must update switch for every new subclass</p></div>
+    <div class="mini-card"><h4>Variant 2: Dynamic Loading (Class.forName)</h4><p>✅ No switch — add subclasses freely, no factory update needed<br>❌ Typos cause runtime errors; exposes subclass names as strings</p></div>
+    <div class="mini-card"><h4>Variant 3: Explicit Factory Methods</h4><p>✅ Best for small stable set of subclasses; clear intent; strong type safety<br>❌ New factory method needed for each new subclass</p></div>
+  </div>
+</div>
+
+<div class="card purple">
+  <h3>Encapsulate Downcast</h3>
+  <div class="def">Move the cast <strong>inside the method</strong> instead of forcing client to perform it.</div>
+  <div class="ba-grid">
+    <pre>// BEFORE: Client forced to cast
+Object lastReading() {
+    return readings.lastElement();
+}
+// Caller:
+Reading r = (Reading) site.lastReading();</pre>
+    <pre>// AFTER: Cast inside method
+Reading lastReading() {
+    return (Reading) readings.lastElement();
+}
+// Caller is clean:
+Reading r = site.lastReading();</pre>
+  </div>
+</div>
+
+<div class="card purple">
+  <h3>Replace Error Code with Exception</h3>
+  <div class="ba-grid">
+    <pre>// BEFORE: Error code
+int withdraw(int amount) {
+    if (amount > _balance) return -1;
+    else { _balance -= amount; return 0; }
+}
+// Caller:
+if (account.withdraw(amount) == -1)
+    handleOverdrawn();</pre>
+    <pre>// AFTER: Exception
+void withdraw(int amount)
+        throws BalanceException {
+    if (amount > _balance)
+        throw new BalanceException();
+    _balance -= amount;
+}
+// Caller:
+try {
+    account.withdraw(amount);
+    doTheUsualThing();
+} catch (BalanceException e) {
+    handleOverdrawn();
+}</pre>
+  </div>
+</div>
+
+<div class="card purple">
+  <h3>Replace Exception with Test — Resource Pool Example</h3>
+  <div class="def">Exceptions should only signal <strong>unexpected/exceptional situations</strong>, not normal program flow. Check condition first with if statement.</div>
+  <div class="ba-grid">
+    <pre>// BEFORE: Exception for normal flow
+Resource getResource() {
+    try {
+        result = (Resource) available.pop();
+        allocated.push(result);
+        return result;
+    } catch (EmptyStackException e) {
+        result = new Resource();
+        allocated.push(result);
+        return result;
+    }
+}</pre>
+    <pre>// AFTER: Test first
+Resource getResource() {
+    if (available.isEmpty())
+        result = new Resource();
+    else
+        result = (Resource) available.pop();
+    allocated.push(result);
+    return result;
+}</pre>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- DEALING WITH GENERALIZATION        -->
+<!-- ══════════════════════════════════ -->
+<div class="section-header" id="generalization">
+  <div class="section-icon" style="background:rgba(251,209,102,0.15);">🧬</div>
+  <h2>Dealing with Generalization</h2>
+  <span class="ppt-label" style="background:rgba(251,209,102,0.15);color:#fde68a;">PPT 3</span>
+</div>
+
+<div class="card yellow">
+  <h3>What is Generalization?</h3>
+  <div class="def">Moving functionality <strong>up or down a class hierarchy</strong> to eliminate duplication and ensure each piece of logic is in the most appropriate class.</div>
+</div>
+
+<div class="grid2">
+
+<div class="card yellow">
+  <h3>1. Pull Up Field</h3>
+  <div class="def">Two subclasses have the same field → <strong>move field to superclass</strong>.</div>
+  <p style="font-size:13px;color:var(--muted);margin-top:8px"><strong>Example (Digital Payments):</strong> BankTransfer and ScannerPayment both have transactionID field → pull up to Payment superclass. Now history log can use Payment type uniformly.</p>
+</div>
+
+<div class="card yellow">
+  <h3>2. Pull Up Method</h3>
+  <div class="def">Methods with identical results in multiple subclasses → <strong>move to superclass</strong>.</div>
+  <p style="font-size:13px;color:var(--muted);margin-top:8px"><strong>Example (Food Delivery):</strong> VegOrder and NonVegOrder both have identical calculateDeliveryFee() → if base fee changes, must update both. Fix: move to Order superclass.</p>
+</div>
+
+<div class="card yellow">
+  <h3>3. Pull Up Constructor Body</h3>
+  <div class="def">Subclasses have constructors with mostly identical bodies → <strong>create superclass constructor, call super()</strong>.</div>
+  <p style="font-size:13px;color:var(--muted);margin-top:8px"><strong>Example (Government ID):</strong> Resident and NRI profiles both verify fullName and DOB at creation → put in Citizen superclass constructor. Subclasses call super(name, dob) and handle specifics (like Visa status).</p>
+</div>
+
+<div class="card yellow">
+  <h3>4. Push Down Method</h3>
+  <div class="def">Behavior in superclass is only used by <strong>some</strong> subclasses → move down.</div>
+  <p style="font-size:13px;color:var(--muted);margin-top:8px"><strong>Example (Banking):</strong> BankAccount has calculateEarlyWithdrawalPenalty() but SavingsAccount doesn't need it → push down to FixedDepositAccount only.</p>
+</div>
+
+<div class="card yellow">
+  <h3>5. Push Down Field</h3>
+  <div class="def">Field in superclass only used by some subclasses → <strong>move field down</strong>.</div>
+  <p style="font-size:13px;color:var(--muted);margin-top:8px"><strong>Example (Indian Railways):</strong> Train superclass has acTierCount but UnreservedExpress doesn't need it (always null) → push down to only the subclasses that have AC tiers.</p>
+</div>
+
+<div class="card yellow">
+  <h3>6. Extract Subclass</h3>
+  <div class="def">A class has features used by <strong>only some instances</strong> → create a subclass.</div>
+  <p style="font-size:13px;color:var(--muted);margin-top:8px"><strong>Example (E-commerce):</strong> Product has warrantyPeriod and isReturnable but for groceries these are empty. Fix: extract ElectronicProduct subclass for warranty data.</p>
+</div>
+
+<div class="card yellow">
+  <h3>7. Extract Superclass</h3>
+  <div class="def">Two classes have similar features → <strong>create a superclass, move common features into it</strong>.</div>
+  <p style="font-size:13px;color:var(--muted);margin-top:8px"><strong>Example (Educational Institutes):</strong> Student has id, name, getFees() and Professor has id, name, getSalary(). Extract MemberOfInstitute superclass. Now campus gate system just checks for MemberOfInstitute.</p>
+</div>
+
+<div class="card yellow">
+  <h3>8. Extract Interface</h3>
+  <div class="def">Decouple a class from clients by moving a <strong>subset of public methods into a new interface</strong>.</div>
+  <p style="font-size:13px;color:var(--muted);margin-top:8px"><strong>Example:</strong> Timesheet depends on full Employee but only needs getRate() and hasSpecialSkill(). Extract Billable interface. Now Computer can also implement Billable and be used in Timesheet.</p>
+  <pre style="margin-top:8px">// Before: double charge(Employee emp, int days)
+// After: double charge(Billable emp, int days)
+// Now Computer implements Billable too!</pre>
+</div>
+
+</div>
+
+<div class="card yellow">
+  <h3>9. Collapse Hierarchy</h3>
+  <div class="def">A superclass and its subclass are no longer significantly different → <strong>merge them into a single class</strong>.</div>
+  <ul class="points">
+    <li>Pick which class to remove (parent or child)</li>
+    <li>Move all fields/methods to the class you're keeping</li>
+    <li>Update all references to the removed class</li>
+    <li>Delete the empty, unused class</li>
+  </ul>
+  <p style="font-size:13px;color:var(--muted);margin-top:8px"><strong>Example:</strong> Employee (parent) and Salesman (child). Salesman has no unique behavior → move remaining Salesman code into Employee, update all usages, delete Salesman.</p>
+</div>
+
+<div class="card yellow">
+  <h3>10. Form Template Method</h3>
+  <div class="def">Common steps moved to <strong>superclass</strong>, subclasses handle differing parts. Superclass defines template (order of steps); subclasses override specific steps.</div>
+  <ul class="points">
+    <li>Remove duplication: identical steps in superclass, different formatting in subclasses</li>
+    <li>Easy to extend: just create new subclass with different step implementations</li>
+  </ul>
+  <h4 class="sub">Example (Statement Formatting)</h4>
+  <ul class="points">
+    <li>Customer.statement() (ASCII) and htmlStatement() (HTML) do same steps but different formatting</li>
+    <li>Create TextStatement and HtmlStatement subclasses</li>
+    <li>Both have value() method with same steps calling headerString(), eachRentalString(), footerString()</li>
+    <li>Pull value() up to Statement superclass; declare header/detail/footer as abstract</li>
+    <li>Result: superclass controls workflow, subclasses define formatting only</li>
+  </ul>
+</div>
+
+<div class="card yellow">
+  <h3>11. Replace Inheritance with Delegation</h3>
+  <div class="def">Subclass only needs <strong>part of superclass</strong> → keep a reference to the superclass and delegate calls instead of inheriting.</div>
+  <ul class="points">
+    <li>Clarify intent — shows subclass only uses part of superclass</li>
+    <li>Control interface — expose only needed methods</li>
+    <li>Avoid inheriting unnecessary fields or unsuitable methods</li>
+  </ul>
+  <h4 class="sub">Example (Stack inheriting Vector)</h4>
+  <ul class="points">
+    <li>Stack extends Vector → gets many unwanted methods (insertElementAt, etc.)</li>
+    <li>Fix: Create <code>private Vector _vector = new Vector();</code> inside Stack</li>
+    <li>Delegate push/pop to _vector; expose only size() and isEmpty() as needed</li>
+    <li>Remove extends Vector; Stack only exposes relevant operations</li>
+  </ul>
+</div>
+
+<div class="card yellow">
+  <h3>12. Replace Delegation with Inheritance</h3>
+  <div class="def">Class delegates most of its work to another class → <strong>just inherit from it</strong> to avoid many forwarding methods.</div>
+  <ul class="points">
+    <li>Reduce boilerplate — avoid writing many simple forwarding methods</li>
+    <li>Simpler interface — automatically get all methods by inheriting</li>
+  </ul>
+  <div class="exam-tip"><span class="icon">⚠️</span><p><strong>When NOT to use:</strong> If you only need SOME methods (partial use) — don't inherit. Also avoid if delegate object is shared and mutable.</p></div>
+  <h4 class="sub">Example (Employee → Person)</h4>
+  <ul class="points">
+    <li>Employee has Person _person field and wraps ALL Person methods</li>
+    <li>Fix: class Employee extends Person; remove all wrapper methods; remove _person field</li>
+    <li>Now Employee directly inherits all Person functionality</li>
+  </ul>
+</div>
+
+<!-- FINAL QUICK REFERENCE TABLE -->
+<div class="section-header" style="margin-top:56px">
+  <div class="section-icon" style="background:rgba(255,107,107,0.15);">📋</div>
+  <h2>Quick Reference — All 25 Smells</h2>
+</div>
+
+<div class="tbl-wrap">
+  <table>
+    <tr><th>#</th><th>Smell Name</th><th>Category</th><th>Principle Violated</th><th>Key Fix</th></tr>
+    <tr><td>1</td><td>Missing Abstraction</td><td>Abstraction</td><td>Crisp conceptual boundaries</td><td>Create proper class/interface</td></tr>
+    <tr><td>2</td><td>Imperative Abstraction</td><td>Abstraction</td><td>OOP: classes = entities not actions</td><td>Move operation into a proper class</td></tr>
+    <tr><td>3</td><td>Incomplete Abstraction</td><td>Abstraction</td><td>Coherence & completeness</td><td>Add complementary methods</td></tr>
+    <tr><td>4</td><td>Multifaceted Abstraction</td><td>Abstraction</td><td>Single Responsibility Principle</td><td>Extract Class</td></tr>
+    <tr><td>5</td><td>Unnecessary Abstraction</td><td>Abstraction</td><td>YAGNI</td><td>Remove/simplify the class</td></tr>
+    <tr><td>6</td><td>Unutilized Abstraction</td><td>Abstraction</td><td>YAGNI</td><td>Delete or @Deprecated</td></tr>
+    <tr><td>7</td><td>Duplicate Abstraction</td><td>Abstraction</td><td>DRY / Avoid duplication</td><td>Rename or factor out common code</td></tr>
+    <tr><td>8</td><td>Deficient Encapsulation</td><td>Encapsulation</td><td>Hide implementation details</td><td>Make fields private, use accessors</td></tr>
+    <tr><td>9</td><td>Leaky Encapsulation</td><td>Encapsulation</td><td>Hide implementation details</td><td>Return base types/copies/iterators</td></tr>
+    <tr><td>10</td><td>Missing Encapsulation</td><td>Encapsulation</td><td>OCP, Hide variations</td><td>Strategy/Bridge pattern</td></tr>
+    <tr><td>11</td><td>Unexploited Encapsulation</td><td>Encapsulation</td><td>Polymorphism / OOP</td><td>Use polymorphism, remove switch</td></tr>
+    <tr><td>12</td><td>Broken Modularization</td><td>Modularization</td><td>Localize related data & methods</td><td>Move Method, Move Field</td></tr>
+    <tr><td>13</td><td>Insufficient Modularization</td><td>Modularization</td><td>Decompose to manageable size</td><td>Extract Class, ISP</td></tr>
+    <tr><td>14</td><td>Cyclically-Dependent Modularization</td><td>Modularization</td><td>Acyclic Dependencies Principle</td><td>Introduce Interface, Move Code</td></tr>
+    <tr><td>15</td><td>Hub-like Modularization</td><td>Modularization</td><td>Limit dependencies</td><td>Split responsibilities, CoR pattern</td></tr>
+    <tr><td>16</td><td>Missing Hierarchy</td><td>Hierarchy</td><td>Apply meaningful classification</td><td>Replace switch with polymorphism</td></tr>
+    <tr><td>17</td><td>Unnecessary Hierarchy</td><td>Hierarchy</td><td>Apply meaningful classification</td><td>Collapse subclasses into instances</td></tr>
+    <tr><td>18</td><td>Unfactored Hierarchy</td><td>Hierarchy</td><td>DRY, Apply meaningful generalization</td><td>Pull Up Method/Field</td></tr>
+    <tr><td>19</td><td>Wide Hierarchy</td><td>Hierarchy</td><td>Apply meaningful classification</td><td>Introduce intermediate abstraction</td></tr>
+    <tr><td>20</td><td>Speculative Hierarchy</td><td>Hierarchy</td><td>YAGNI</td><td>Collapse Hierarchy</td></tr>
+    <tr><td>21</td><td>Deep Hierarchy</td><td>Hierarchy</td><td>Meaningful generalization (limited)</td><td>Restructure intermediate types</td></tr>
+    <tr><td>22</td><td>Rebellious Hierarchy</td><td>Hierarchy</td><td>LSP (Liskov Substitution)</td><td>Move Down, Remove, or Intermediate type</td></tr>
+  </table>
+</div>
+
+<div class="exam-tip" style="margin-top:24px">
+  <span class="icon">🎯</span>
+  <p><strong>Exam Strategy:</strong> For any smell question, answer with: (1) Definition, (2) Which principle it violates, (3) Causes, (4) Real example from the PPT, (5) Refactoring technique, (6) Quality attributes impacted. You have all of these above — good luck tomorrow! 💪</p>
+</div>
+
+</div><!-- end container -->
+</body>
+</html>
