@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Patterns — Exam Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --bg2: #161512;
+    --bg3: #1e1c18;
+    --cream: #f0ead8;
+    --warm: #c9b99a;
+    --muted: #7a6e5e;
+    --accent-c: #e8a020;
+    --accent-s: #4ea8a8;
+    --accent-b: #c05a8a;
+    --border: #2e2a22;
+    --green: #6abf87;
+    --red: #e07070;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--cream); font-family: 'Source Serif 4', Georgia, serif; font-size: 15px; line-height: 1.7; }
+
+  header { padding: 60px 40px 40px; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 0%, rgba(232,160,32,.08) 0%, transparent 60%), radial-gradient(ellipse at 10% 100%, rgba(78,168,168,.06) 0%, transparent 50%); pointer-events: none; }
+  header h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; letter-spacing: -1px; color: var(--cream); line-height: 1.1; }
+  header p.subtitle { margin-top: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+
+  .nav-bar { display: flex; gap: 8px; padding: 18px 40px; border-bottom: 1px solid var(--border); flex-wrap: wrap; position: sticky; top: 0; background: rgba(15,14,12,.96); backdrop-filter: blur(8px); z-index: 100; }
+  .nav-pill { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 5px 14px; border-radius: 2px; border: 1px solid; cursor: pointer; text-decoration: none; transition: all .2s; }
+  .nav-pill.c { border-color: var(--accent-c); color: var(--accent-c); } .nav-pill.c:hover { background: var(--accent-c); color: #000; }
+  .nav-pill.s { border-color: var(--accent-s); color: var(--accent-s); } .nav-pill.s:hover { background: var(--accent-s); color: #000; }
+  .nav-pill.b { border-color: var(--accent-b); color: var(--accent-b); } .nav-pill.b:hover { background: var(--accent-b); color: #fff; }
+  .nav-pill.n { border-color: var(--muted); color: var(--muted); } .nav-pill.n:hover { background: var(--muted); color: #000; }
+
+  .section-header { padding: 50px 40px 20px; border-bottom: 1px solid var(--border); }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; }
+  .section-label.c { color: var(--accent-c); } .section-label.s { color: var(--accent-s); } .section-label.b { color: var(--accent-b); }
+  .section-header h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 700; color: var(--cream); }
+  .section-header .desc { margin-top: 8px; color: var(--warm); font-style: italic; max-width: 640px; }
+
+  .pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+
+  .card { background: var(--bg); padding: 28px 28px 24px; position: relative; transition: background .2s; }
+  .card:hover { background: var(--bg2); }
+  .card-accent { position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
+  .card-accent.c { background: var(--accent-c); } .card-accent.s { background: var(--accent-s); } .card-accent.b { background: var(--accent-b); }
+  .card-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 6px; }
+  .card h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--cream); margin-bottom: 4px; }
+  .also-known { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 12px; }
+  .card-def { font-size: 13.5px; color: var(--warm); margin-bottom: 14px; font-style: italic; border-left: 2px solid var(--border); padding-left: 10px; }
+
+  .st { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin: 14px 0 5px; }
+  .st.hc { color: var(--accent-c); } .st.hs { color: var(--accent-s); } .st.hb { color: var(--accent-b); }
+
+  ul.cl { list-style: none; padding: 0; }
+  ul.cl li { font-size: 13px; color: var(--cream); padding: 2px 0 2px 16px; position: relative; line-height: 1.5; }
+  ul.cl li::before { content: '→'; position: absolute; left: 0; color: var(--muted); font-size: 10px; top: 4px; }
+
+  .bc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .bc-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 2px; padding: 10px 12px; }
+  .bc-box.B { border-top: 2px solid var(--green); }
+  .bc-box.L { border-top: 2px solid var(--red); }
+  .bc-title { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .bc-box.B .bc-title { color: var(--green); }
+  .bc-box.L .bc-title { color: var(--red); }
+  .bc-box ul { list-style: none; padding: 0; }
+  .bc-box ul li { font-size: 11.5px; padding: 2px 0 2px 14px; position: relative; line-height: 1.45; }
+  .bc-box.B ul li::before { content: '+'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+  .bc-box.L ul li::before { content: '−'; position: absolute; left: 0; color: var(--red); font-weight: 700; }
+  .bc-box.B ul li { color: #c8e8d0; }
+  .bc-box.L ul li { color: #e8c8c8; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 14px; }
+  .tag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 2px; background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+  .tag.key { border-color: currentColor; font-weight: 600; }
+  .tag.key.c { color: var(--accent-c); } .tag.key.s { color: var(--accent-s); } .tag.key.b { color: var(--accent-b); }
+
+  .vs-box { margin-top: 12px; padding: 8px 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: 2px; font-size: 12px; color: var(--warm); }
+  .vs-box strong { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 3px; }
+
+  .cheatsheet { padding: 50px 40px; border-bottom: 1px solid var(--border); }
+  .cheatsheet h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--cream); margin-bottom: 24px; }
+  .cs-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .cs-table th { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  .cs-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+  .cs-table tr:hover td { background: var(--bg2); }
+  .cs-table .pname { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .cs-table .pname.c { color: var(--accent-c); } .cs-table .pname.s { color: var(--accent-s); } .cs-table .pname.b { color: var(--accent-b); }
+  .mp { color: var(--green); font-size: 11.5px; } .mc { color: var(--red); font-size: 11.5px; }
+
+  .compare-section { padding: 50px 40px; border-bottom: 1px solid var(--border); }
+  .compare-section h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--cream); margin-bottom: 6px; }
+  .compare-section .desc { color: var(--warm); font-style: italic; margin-bottom: 24px; }
+  .compare-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .cc { background: var(--bg2); border: 1px solid var(--border); border-radius: 2px; padding: 16px; }
+  .cc h4 { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  .cc h4.c { color: var(--accent-c); } .cc h4.s { color: var(--accent-s); } .cc h4.b { color: var(--accent-b); }
+  .cr { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .cr:last-child { border: none; }
+  .cr .l { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .cr .r { color: var(--cream); text-align: right; max-width: 62%; }
+
+  footer { padding: 30px 40px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 1px; border-top: 1px solid var(--border); text-align: center; }
+
+  @media (max-width: 600px) {
+    header, .nav-bar, .section-header, .cheatsheet, .compare-section { padding-left: 18px; padding-right: 18px; }
+    .card { padding: 20px 18px; }
+    .bc-grid { grid-template-columns: 1fr; }
+    .cs-table th:nth-child(4), .cs-table td:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="subtitle">Unit 2 · Software Design</p>
+  <h1>Design Patterns<br>Exam Study Guide</h1>
+  <p class="subtitle" style="margin-top:12px">23 Patterns · Creational · Structural · Behavioural</p>
+</header>
+
+<nav class="nav-bar">
+  <a class="nav-pill c" href="#creational">Creational (5)</a>
+  <a class="nav-pill s" href="#structural">Structural (7)</a>
+  <a class="nav-pill b" href="#behavioural">Behavioural (11)</a>
+  <a class="nav-pill n" href="#cheatsheet">Quick Ref</a>
+  <a class="nav-pill n" href="#comparisons">Comparisons</a>
+</nav>
+
+<!-- ═══════ CREATIONAL ═══════ -->
+<section id="creational">
+<div class="section-header">
+  <p class="section-label c">Creational Patterns</p>
+  <h2>Object Creation Mechanisms</h2>
+  <p class="desc">Abstract the instantiation process so systems are independent of how objects are created, composed, and represented.</p>
+</div>
+<div class="pattern-grid">
+
+<!-- SINGLETON -->
+<div class="card"><div class="card-accent c"></div>
+  <div class="card-num">2.1.1</div><h3>Singleton</h3>
+  <div class="card-def">"Ensures a class has only one instance and provides a global access point to it."</div>
+  <p class="st hc">Intent</p>
+  <ul class="cl"><li>Restrict instantiation to exactly one object</li><li>Provide a single shared global access point</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Log files, Database connections, Caching</li><li>Configuration settings, Device drivers</li><li>One coordinator object needed system-wide</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Singleton</strong> — private constructor + static <code>get_instance()</code></li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Prevents duplicate object creation</li>
+      <li>Easy cross-component sharing</li>
+      <li>Controls resource usage (memory, DB, threads)</li>
+      <li>Lazy initialisation supported</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Global state — acts like a global variable, harder to test</li>
+      <li>Hidden dependencies — breaks modular design</li>
+      <li>Multithreading requires special thread-safety care</li>
+      <li>Private constructor blocks inheritance</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key c">One Instance</span><span class="tag">Logger</span><span class="tag">DB Pool</span><span class="tag">Config</span></div>
+</div>
+
+<!-- ABSTRACT FACTORY -->
+<div class="card"><div class="card-accent c"></div>
+  <div class="card-num">2.1.2</div><h3>Abstract Factory</h3>
+  <div class="also-known">aka "Factory of Factories"</div>
+  <div class="card-def">"Provides an interface for creating families of related objects without specifying their concrete classes."</div>
+  <p class="st hc">Intent</p>
+  <ul class="cl"><li>Create families of related objects guaranteed to work together</li><li>Enforce consistency — products from same family are compatible</li><li>Hide creation logic from client code</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Need multiple product families (Electric/Petrol vehicles)</li><li>System configurable by platform (Win/Mac/Linux UI widgets)</li><li>Bank accounts + card types must match per tier</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>AbstractFactory</strong> — interface declaring create methods</li><li><strong>ConcreteFactory</strong> — creates one product family</li><li><strong>AbstractProduct</strong> — interface per product type (Car, Bike)</li><li><strong>ConcreteProduct</strong> — specific instance (ElectricCar)</li><li><strong>Client</strong> — uses only abstract interfaces</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Isolates concrete classes from client</li>
+      <li>Makes exchanging product families easy</li>
+      <li>Promotes consistency among products in the same family</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Hard to support new product types — must change all factories</li>
+      <li>Increased number of classes and interfaces</li>
+      <li>Can be overkill for simple scenarios</li>
+    </ul></div>
+  </div>
+  <div class="vs-box"><strong>vs Factory Method</strong>Factory Method creates <em>one product</em>; Abstract Factory creates <em>families of related products</em>.</div>
+  <div class="tag-row"><span class="tag key c">Product Family</span><span class="tag">OS Widgets</span><span class="tag">Vehicle Plant</span></div>
+</div>
+
+<!-- FACTORY METHOD -->
+<div class="card"><div class="card-accent c"></div>
+  <div class="card-num">2.1.3</div><h3>Factory Method</h3>
+  <div class="also-known">aka "Virtual Constructor"</div>
+  <div class="card-def">"Defines an interface for creating an object, but lets subclasses decide which class to instantiate."</div>
+  <p class="st hc">Intent</p>
+  <ul class="cl"><li>Avoid tight coupling between client and concrete classes</li><li>Open/Closed Principle — extend without modifying</li><li>Vary object creation without changing client code</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Exact type not known until runtime</li><li>Notification system: SMS / Email / Push</li><li>Payment: Card / UPI / Net Banking</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Creator</strong> — abstract class declaring the factory method</li><li><strong>ConcreteCreator</strong> — overrides to return specific product</li><li><strong>Product</strong> — interface for created objects</li><li><strong>ConcreteProduct</strong> — specific implementation</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Decouples object creation from usage</li>
+      <li>Supports polymorphism and scalability</li>
+      <li>Enables code reuse and testability</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>More classes and complexity than simple instantiation</li>
+      <li>Overhead of subclassing just to change object creation</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key c">Subclass Decides</span><span class="tag">Notifications</span><span class="tag">Payment</span></div>
+</div>
+
+<!-- PROTOTYPE -->
+<div class="card"><div class="card-accent c"></div>
+  <div class="card-num">2.1.4</div><h3>Prototype</h3>
+  <div class="card-def">"Creates new objects by cloning existing ones — avoiding costly re-initialization."</div>
+  <p class="st hc">Intent</p>
+  <ul class="cl"><li>Avoid expensive object creation from scratch</li><li>Clone a prototype instead of using <code>new</code></li><li>Hide complex construction logic from client</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Object creation is expensive (DB / network / parsing)</li><li>Need many similar objects with slight variations</li><li>Duplicate invoice templates, covering letters</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Prototype</strong> — interface with <code>clone()</code></li><li><strong>ConcretePrototype</strong> — implements clone (shallow/deep copy)</li><li><strong>Client</strong> — calls <code>clone()</code> instead of <code>new</code></li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Fast creation — avoids time-consuming constructors</li>
+      <li>Reduces code duplication — centralised prototype logic</li>
+      <li>Runtime flexibility — clone and modify at runtime</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Deep cloning can be hard and error-prone</li>
+      <li>Hidden side effects if shared references aren't handled</li>
+      <li>All classes must support a <code>clone()</code> interface</li>
+    </ul></div>
+  </div>
+  <div class="vs-box"><strong>vs Factory Method</strong>Factory uses <em>inheritance</em>; Prototype uses <em>composition (clone)</em>. Use Prototype when duplicating object state matters.</div>
+  <div class="tag-row"><span class="tag key c">Clone</span><span class="tag">copy.deepcopy()</span><span class="tag">Document Template</span></div>
+</div>
+
+<!-- BUILDER -->
+<div class="card"><div class="card-accent c"></div>
+  <div class="card-num">2.1.5</div><h3>Builder</h3>
+  <div class="card-def">"Separates construction of a complex object from its representation — same process, different representations."</div>
+  <p class="st hc">Intent</p>
+  <ul class="cl"><li>Construct complex objects step by step</li><li>Avoid telescoping constructors (too many parameters)</li><li>Create different representations using the same building process</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Many optional components / configurations</li><li>Step-by-step creation required</li><li>Pizza ordering, Car manufacturing, CV/Resume builder</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Builder</strong> — abstract interface for building steps</li><li><strong>ConcreteBuilder</strong> — implements steps (LuxuryVacation, BudgetVacation)</li><li><strong>Director</strong> — controls build order (TravelAgency)</li><li><strong>Product</strong> — the complex object being built</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Better control over construction process step-by-step</li>
+      <li>Readability — eliminates constructor parameter confusion</li>
+      <li>Supports different representations via same process</li>
+      <li>Builders can be reused for various products</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Requires multiple extra classes (Builder, ConcreteBuilder, Director)</li>
+      <li>May be overkill for simple object construction</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key c">Step-by-Step</span><span class="tag">Director</span><span class="tag">Pizza / Car</span><span class="tag">Immutable</span></div>
+</div>
+
+</div></section><!-- /creational -->
+
+<!-- ═══════ STRUCTURAL ═══════ -->
+<section id="structural">
+<div class="section-header">
+  <p class="section-label s">Structural Patterns</p>
+  <h2>Composing Objects &amp; Classes</h2>
+  <p class="desc">Concerned with how objects and classes are assembled into larger structures — while keeping them flexible and efficient.</p>
+</div>
+<div class="pattern-grid">
+
+<!-- ADAPTER -->
+<div class="card"><div class="card-accent s"></div>
+  <div class="card-num">2.2.1</div><h3>Adapter</h3>
+  <div class="also-known">aka "Wrapper"</div>
+  <div class="card-def">"Converts the interface of a class into another interface the client expects."</div>
+  <p class="st hs">Intent</p>
+  <ul class="cl"><li>Let incompatible classes work together</li><li>Reuse existing / third-party code without modification</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Integrating legacy code into a new system</li><li>Payment gateway: UPI/Paytm/Card → common interface</li><li>Media player supporting additional formats</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Target</strong> — interface client expects</li><li><strong>Adaptee</strong> — existing incompatible class</li><li><strong>Adapter</strong> — wraps Adaptee, implements Target</li><li><strong>Client</strong> — uses only the Target interface</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Reuses existing code without modifying it</li>
+      <li>Improves compatibility across systems</li>
+      <li>Clients remain decoupled from third-party APIs</li>
+      <li>Makes the system extensible and easy to test/mock</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Increased class count — can lead to class explosion</li>
+      <li>Added complexity via extra abstraction layer</li>
+      <li>Not ideal for frequently changing interfaces</li>
+    </ul></div>
+  </div>
+  <div class="vs-box"><strong>vs Facade</strong>Adapter makes <em>incompatible interfaces compatible</em>; Facade <em>simplifies</em> a subsystem. Adapter is retroactive; Facade is designed upfront.</div>
+  <div class="tag-row"><span class="tag key s">Compatibility</span><span class="tag">Wrapper</span><span class="tag">Legacy</span></div>
+</div>
+
+<!-- BRIDGE -->
+<div class="card"><div class="card-accent s"></div>
+  <div class="card-num">2.2.2</div><h3>Bridge</h3>
+  <div class="card-def">"Separates an object's abstraction from its implementation so both can vary independently."</div>
+  <p class="st hs">Intent</p>
+  <ul class="cl"><li>Decouple abstraction from implementation — two separate hierarchies</li><li>Prevent class explosion from combining multiple dimensions</li><li>Switch implementations at runtime</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Permutation explosion: TV/Radio × Basic/Advanced Remote</li><li>Abstraction and implementation must evolve independently</li><li>Smart home: appliances × switch types</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Abstraction</strong> — high-level control (RemoteControl)</li><li><strong>RefinedAbstraction</strong> — extended control (AdvancedRemote)</li><li><strong>Implementor</strong> — device interface (Device)</li><li><strong>ConcreteImplementor</strong> — TV, Radio</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Decouples abstraction from implementation</li>
+      <li>Avoids class explosion — each hierarchy extended independently</li>
+      <li>Improves flexibility and scalability</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Increased complexity due to additional abstraction layers</li>
+      <li>Performance overhead due to indirection between hierarchies</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key s">Two Hierarchies</span><span class="tag">Device + Remote</span><span class="tag">Runtime Switch</span></div>
+</div>
+
+<!-- COMPOSITE -->
+<div class="card"><div class="card-accent s"></div>
+  <div class="card-num">2.2.3</div><h3>Composite</h3>
+  <div class="card-def">"Composes objects into tree structures to represent part-whole hierarchies — treat individual objects and groups uniformly."</div>
+  <p class="st hs">Intent</p>
+  <ul class="cl"><li>Model hierarchical tree structures</li><li>Uniform treatment of leaves and composites</li><li>Avoid if/else to distinguish individual vs collection</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>File system: file vs folder</li><li>Org chart: employee vs manager with team</li><li>UI components, DOM elements (HTML/XML)</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Component</strong> — common interface (show_info)</li><li><strong>Leaf</strong> — individual object (Developer, Tester)</li><li><strong>Composite</strong> — holds children, delegates operations (Manager)</li><li><strong>Client</strong> — treats all via Component interface</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Easy to model nested/tree data (folders, UI, org charts)</li>
+      <li>Uniform interface — treat leaf and composite the same</li>
+      <li>Open/Closed Principle — easily add new component types</li>
+      <li>Simplified client code — no conditional statements</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Harder to type-check strictly — leaf vs composite look the same</li>
+      <li>Complex recursive structures can lead to overdesign</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key s">Tree Structure</span><span class="tag">Leaf + Composite</span><span class="tag">File System</span></div>
+</div>
+
+<!-- DECORATOR -->
+<div class="card"><div class="card-accent s"></div>
+  <div class="card-num">2.2.4</div><h3>Decorator</h3>
+  <div class="card-def">"Attaches new behaviors to objects at runtime by wrapping them in decorator objects."</div>
+  <p class="st hs">Intent</p>
+  <ul class="cl"><li>Add behavior dynamically without subclassing</li><li>Avoid subclass explosion for feature combinations</li><li>Follow Open/Closed Principle</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Text Editor: Bold + Italic + Underline (mix-and-match)</li><li>E-commerce: RAM + SSD + GPU add-ons</li><li>Video streaming: subtitles + audio + quality options</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Component</strong> — interface for objects that can be wrapped</li><li><strong>ConcreteComponent</strong> — base object (PlainEditor)</li><li><strong>BaseDecorator</strong> — wraps component, delegates calls</li><li><strong>ConcreteDecorator</strong> — adds specific feature (BoldDecorator)</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Adds new behavior without modifying existing classes</li>
+      <li>Avoids subclass explosion for combinations of features</li>
+      <li>Follows Open/Closed Principle</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Too many small decorator classes can clutter the design</li>
+      <li>Deeply nested decorators make debugging tricky</li>
+      <li>Not suitable when global behavior changes are needed</li>
+    </ul></div>
+  </div>
+  <div class="vs-box"><strong>vs Proxy</strong>Both wrap objects; Decorator <em>adds features</em>; Proxy <em>controls access</em>. Decorator is client-driven; Proxy may hide the real object entirely.</div>
+  <div class="tag-row"><span class="tag key s">Runtime Wrap</span><span class="tag">Bold+Italic</span><span class="tag">Dynamic Behavior</span></div>
+</div>
+
+<!-- FACADE -->
+<div class="card"><div class="card-accent s"></div>
+  <div class="card-num">2.2.5</div><h3>Facade</h3>
+  <div class="card-def">"Provides a unified, high-level interface to a complex subsystem — hiding complexity behind a simple face."</div>
+  <p class="st hs">Intent</p>
+  <ul class="cl"><li>Simplify complex subsystem usage</li><li>Decouple client from internal workings</li><li>Encapsulate complexities into a single entry point</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Bank account opening: ID verify + credit check + create + welcome kit</li><li>E-commerce order: availability + payment + inventory + fulfil</li><li>Travel booking: flight + hotel + car in one call</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Facade</strong> — simplified interface (BankAccountFacade)</li><li><strong>Subsystems</strong> — complex internal classes (IDVerifier, CreditChecker…)</li><li><strong>Client</strong> — calls only the facade</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Simplifies complex subsystems for clients</li>
+      <li>Reduces client-subsystem dependencies</li>
+      <li>Promotes loose coupling and layered architecture</li>
+      <li>Improved readability and maintainability</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Not suitable when full control over subsystems is required</li>
+      <li>Overkill if the subsystem is already simple</li>
+      <li>Facade can become a "god object" if overloaded</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key s">Simplify</span><span class="tag">One Entry Point</span><span class="tag">Decouple</span></div>
+</div>
+
+<!-- FLYWEIGHT -->
+<div class="card"><div class="card-accent s"></div>
+  <div class="card-num">2.2.6</div><h3>Flyweight</h3>
+  <div class="card-def">"Reduces memory by sharing intrinsic (common) state between many similar objects — unique extrinsic state passed by client."</div>
+  <p class="st hs">Intent</p>
+  <ul class="cl"><li>Minimize memory by sharing intrinsic state</li><li>Improve performance — reduce object creation overhead</li><li>Scale efficiently with large numbers of similar objects</li></ul>
+  <p class="st">Intrinsic vs Extrinsic</p>
+  <ul class="cl"><li><strong>Intrinsic</strong> — shared, stored in flyweight (tree type: Oak, color, texture)</li><li><strong>Extrinsic</strong> — unique per instance, passed by client (tree position x, y)</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Thousands of trees in a game (shared type, unique position)</li><li>Text editor: font/size/color shared across same characters</li><li>DB connection pools, caching systems</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Flyweight</strong> — shared object (TreeType)</li><li><strong>FlyweightFactory</strong> — creates and caches flyweights</li><li><strong>Context</strong> — holds extrinsic state (Tree with x, y)</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Massive memory savings for large numbers of similar objects</li>
+      <li>Speeds up object creation by reusing shared state</li>
+      <li>Encourages reuse and object sharing</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Adds complexity if not actually needed</li>
+      <li>Requires careful separation of intrinsic vs extrinsic state</li>
+      <li>Extrinsic state management adds overhead to calling code</li>
+    </ul></div>
+  </div>
+  <div class="vs-box"><strong>vs Singleton</strong>Singleton = one instance total. Flyweight = one instance <em>per type</em>, many types allowed.</div>
+  <div class="tag-row"><span class="tag key s">Share State</span><span class="tag">Intrinsic/Extrinsic</span><span class="tag">Memory</span></div>
+</div>
+
+<!-- PROXY -->
+<div class="card"><div class="card-accent s"></div>
+  <div class="card-num">2.2.7</div><h3>Proxy</h3>
+  <div class="also-known">aka "Surrogate"</div>
+  <div class="card-def">"Provides a surrogate that controls access to another object — adding security, lazy loading, caching, or logging."</div>
+  <p class="st hs">Intent</p>
+  <ul class="cl"><li>Control access to a sensitive or expensive object</li><li>Lazy initialization — create only when needed</li><li>Add logging / caching / monitoring without changing real object</li></ul>
+  <p class="st">Types of Proxy</p>
+  <ul class="cl"><li><strong>Remote</strong> — represents object on a different server</li><li><strong>Virtual</strong> — delays heavy creation (image loading)</li><li><strong>Protection</strong> — access control by role (Admin vs Guest)</li><li><strong>Smart</strong> — adds logging, caching, monitoring</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Subject</strong> — common interface</li><li><strong>RealSubject</strong> — actual object</li><li><strong>Proxy</strong> — controls access, same interface as RealSubject</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Adds controlled access to the real object</li>
+      <li>Supports lazy loading, security, logging, and caching</li>
+      <li>Reduces resource consumption for heavy objects</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Adds an extra level of indirection</li>
+      <li>Can introduce performance overhead</li>
+      <li>Response delay if proxy involves network/remote</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key s">Control Access</span><span class="tag">Lazy Load</span><span class="tag">Security</span><span class="tag">Cache</span></div>
+</div>
+
+</div></section><!-- /structural -->
+
+<!-- ═══════ BEHAVIOURAL ═══════ -->
+<section id="behavioural">
+<div class="section-header">
+  <p class="section-label b">Behavioural Patterns</p>
+  <h2>Communication Between Objects</h2>
+  <p class="desc">Concerned with algorithms and the assignment of responsibilities — defining how objects interact and distribute work.</p>
+</div>
+<div class="pattern-grid">
+
+<!-- COMMAND -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.1</div><h3>Command</h3>
+  <div class="card-def">"Turns a request into a standalone object — enabling undo/redo, queuing, logging, and decoupled execution."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Encapsulate requests as objects</li><li>Decouple sender (invoker) from receiver</li><li>Support undo/redo, queue, schedule, and log</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>GUI buttons / menu actions</li><li>Job schedulers: DataBackup, ReportGen, EmailSend</li><li>Database transactions with rollback</li><li>Remote control buttons</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Command</strong> — interface with <code>execute()</code></li><li><strong>ConcreteCommand</strong> — binds action to receiver</li><li><strong>Invoker</strong> — triggers command (JobScheduler)</li><li><strong>Receiver</strong> — performs actual business logic</li><li><strong>Client</strong> — creates and configures commands</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Decouples sender (invoker) and receiver completely</li>
+      <li>Easy to add new commands without changing existing code</li>
+      <li>Supports undo, redo, logging, macros</li>
+      <li>Can queue or schedule commands</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Increased class complexity — one class per command</li>
+      <li>Memory and performance overhead for large command histories</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key b">Encapsulate Request</span><span class="tag">Undo/Redo</span><span class="tag">Queue</span></div>
+</div>
+
+<!-- INTERPRETER -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.2</div><h3>Interpreter</h3>
+  <div class="card-def">"Defines a grammar for a language and provides an interpreter to evaluate sentences in that language."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Parse and evaluate expressions (math, SQL, regex)</li><li>Implement simple scripting / DSL (Domain Specific Language)</li><li>Build expression trees recursively</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>SQL parsers, Regular expression engines</li><li>Business rule engines, Math expression evaluators</li><li>Simple search/filter logic (AND, OR, NOT)</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>AbstractExpression</strong> — interface with <code>interpret()</code></li><li><strong>TerminalExpression</strong> — leaf node (Number)</li><li><strong>NonTerminalExpression</strong> — compound node (Add, Subtract)</li><li><strong>Context</strong> — global info for interpreter</li><li><strong>Client</strong> — builds and triggers expression tree</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Good for implementing simple languages and expression trees</li>
+      <li>Encapsulates parsing and evaluation logic cleanly</li>
+      <li>Supports recursion naturally (expressions within expressions)</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Becomes complex and inefficient for large grammars</li>
+      <li>Better suited for small DSLs only — not production parsers</li>
+      <li>Maintenance difficult as grammar grows</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key b">Grammar / DSL</span><span class="tag">Expression Tree</span><span class="tag">SQL / Regex</span></div>
+</div>
+
+<!-- ITERATOR -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.3</div><h3>Iterator</h3>
+  <div class="card-def">"Provides sequential access to elements of a collection without exposing its internal representation."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Traverse collections uniformly regardless of internal structure</li><li>Support multiple simultaneous traversals</li><li>Unify access to arrays, lists, trees, etc.</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Music playlist (hide internal list type)</li><li>File system traversal, Graph DFS/BFS</li><li>Social media feeds, DB query result processing</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Iterator</strong> — interface (has_next, next)</li><li><strong>ConcreteIterator</strong> — implements traversal (SongIterator)</li><li><strong>Aggregate</strong> — collection interface (create_iterator)</li><li><strong>ConcreteAggregate</strong> — actual collection (Playlist)</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Decouples client from concrete collection implementation</li>
+      <li>Flexible traversal — multiple strategies (forward, backward, DFS)</li>
+      <li>Concurrent iteration on the same collection</li>
+      <li>Encapsulates iteration logic outside the collection</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Modifying the collection during traversal is risky</li>
+      <li>Overkill / unnecessary complexity for simple collections</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key b">Sequential Access</span><span class="tag">has_next/next</span><span class="tag">Playlist</span></div>
+</div>
+
+<!-- MEDIATOR -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.4</div><h3>Mediator</h3>
+  <div class="card-def">"Centralizes communication between multiple objects — preventing direct dependencies and reducing coupling from O(n²) to O(n)."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Objects communicate via mediator, not directly</li><li>Centralize control and coordination logic</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Chat application (ChatRoom routes messages)</li><li>Air traffic control tower</li><li>GUI frameworks (buttons/fields coordinated through a controller)</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Mediator</strong> — interface (send_message)</li><li><strong>ConcreteMediator</strong> — ChatRoom manages users</li><li><strong>Colleague</strong> — User objects that only talk to mediator</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Loose coupling — avoids direct dependencies between colleagues</li>
+      <li>Improved maintainability and reusability</li>
+      <li>Simplified testing of individual components</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Mediator can become a "God Object" — too much logic in one place</li>
+      <li>Single point of failure</li>
+      <li>Transparency and traceability becomes difficult</li>
+      <li>Performance overhead for high-frequency messaging</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key b">Central Hub</span><span class="tag">Chat Room</span><span class="tag">Loose Coupling</span></div>
+</div>
+
+<!-- MEMENTO -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.5</div><h3>Memento</h3>
+  <div class="card-def">"Captures and stores an object's internal state so it can be restored later — without exposing implementation details."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Snapshot/restore state without breaking encapsulation</li><li>Undo/redo, checkpoints, rollback mechanisms</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Text editor undo/redo</li><li>Game save/restore points</li><li>Database transaction rollback, Version control</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Originator</strong> — object whose state is saved (TextEditor)</li><li><strong>Memento</strong> — stores the state snapshot (EditorState)</li><li><strong>Caretaker</strong> — manages mementos, triggers undo (UndoManager)</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Preserves encapsulation — state saved without exposing internals</li>
+      <li>Structured approach for undo/redo features</li>
+      <li>Flexible state management at multiple points</li>
+      <li>Simplifies testing of state transitions</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Memory overhead — storing many snapshots is expensive</li>
+      <li>Added complexity managing the caretaker</li>
+      <li>State consistency issues if Originator structure changes</li>
+      <li>Performance overhead for frequent or large state saves</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key b">Snapshot</span><span class="tag">Undo/Redo</span><span class="tag">Rollback</span></div>
+</div>
+
+<!-- OBSERVER -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.6</div><h3>Observer</h3>
+  <div class="also-known">aka "Publish-Subscribe"</div>
+  <div class="card-def">"One-to-many dependency: when a subject changes state, all registered observers are automatically notified."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Auto-notify multiple dependents on state change</li><li>Loose coupling between subject and observers</li><li>Add/remove observers at runtime</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Stock price → notifies mobile app + trading screen + email</li><li>GUI event handling, news feeds</li><li>Weather monitoring, social media notifications</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Observer</strong> — interface (update)</li><li><strong>Subject/Publisher</strong> — maintains observer list, notifies (Stock)</li><li><strong>ConcreteObserver</strong> — reacts to updates (MobileApp, EmailAlert)</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Loose coupling — subject and observers are independent</li>
+      <li>Scalable — easily add or remove observers at runtime</li>
+      <li>Suitable for event-driven systems</li>
+      <li>Observers reusable in different contexts</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Memory leaks if observers are not properly removed</li>
+      <li>Performance overhead when notifying many observers</li>
+      <li>Observers may receive unintended/unnecessary updates</li>
+      <li>Order of notification is not guaranteed</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key b">One-to-Many</span><span class="tag">Pub/Sub</span><span class="tag">Event Driven</span></div>
+</div>
+
+<!-- STATE -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.7</div><h3>State</h3>
+  <div class="card-def">"Allows an object to change its behavior when its internal state changes — as if the object changed its class."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Each state is its own class — eliminates if/else explosion</li><li>Object delegates behavior to current state object</li><li>Implement finite state machines (FSM) cleanly</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Vending machine: No money → Has money → Dispense</li><li>Traffic lights: Stop → Ready → Go → Blinking</li><li>Media player: Playing, Paused, Stopped</li><li>Game character: Idle, Running, Attacking</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>State</strong> — interface for all states</li><li><strong>ConcreteState</strong> — behavior for one state (NoMoneyState)</li><li><strong>Context</strong> — holds current state reference (VendingMachine)</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Eliminates complex conditional logic (if/else / switch)</li>
+      <li>Improved code maintainability</li>
+      <li>Adheres to Open/Closed Principle — add new states easily</li>
+      <li>Simplifies transitions, enhanced testability</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Increased number of classes — one per state</li>
+      <li>Potential for complexity if not well-designed</li>
+      <li>Memory overhead for many state objects</li>
+    </ul></div>
+  </div>
+  <div class="vs-box"><strong>vs Strategy</strong>State: transitions driven <em>internally</em>; states know each other. Strategy: algorithm chosen <em>explicitly by client</em>; strategies are independent.</div>
+  <div class="tag-row"><span class="tag key b">FSM</span><span class="tag">No if/else</span><span class="tag">Vending Machine</span></div>
+</div>
+
+<!-- STRATEGY -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.8</div><h3>Strategy</h3>
+  <div class="card-def">"Defines a family of algorithms, encapsulates each one, and makes them interchangeable at runtime."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Select algorithm at runtime without if/else</li><li>Isolate algorithm details from context</li><li>Open/Closed — add new strategies without changing context</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Navigation: Shortest / Fastest / Scenic route</li><li>Sorting: QuickSort vs MergeSort based on data</li><li>Payment: Card / UPI / Wallet</li><li>Data compression: ZIP vs GZIP</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Strategy</strong> — interface (calculate_route)</li><li><strong>ConcreteStrategy</strong> — one algorithm (ShortestRoute)</li><li><strong>Context</strong> — holds strategy reference, delegates to it (Navigator)</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Flexibility — swap algorithm at runtime</li>
+      <li>Eliminates conditional logic</li>
+      <li>Decouples algorithm from the context class</li>
+      <li>Testability and Open/Closed Principle</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Increased number of classes — one per strategy</li>
+      <li>Client must be aware of available strategies</li>
+      <li>Overhead if only a few simple algorithms are used</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key b">Swap Algorithm</span><span class="tag">Navigation</span><span class="tag">Payment</span></div>
+</div>
+
+<!-- TEMPLATE METHOD -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.9</div><h3>Template Method</h3>
+  <div class="card-def">"Defines the skeleton of an algorithm in a base class, letting subclasses override specific steps without changing the overall structure."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Fix the algorithm structure — vary only specific steps</li><li>Avoid code duplication — common code in one place</li><li>Enforce fixed order of execution</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Data processing: Read → Validate → Process → Save (CSV vs JSON differ in how)</li><li>Online payment: Authenticate → Process → Receipt</li><li>Report generation: template fixed, data source varies</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>AbstractClass</strong> — <code>template_method()</code> (final) + abstract hook steps</li><li><strong>ConcreteClass</strong> — implements abstract steps (CSVProcessor, JSONProcessor)</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Code reusability — common steps defined once</li>
+      <li>Consistent algorithm structure enforced across subclasses</li>
+      <li>Separation of concerns</li>
+      <li>Improved maintainability and extensibility</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Tight coupling via inheritance — subclasses depend on base class</li>
+      <li>Increased complexity — more classes needed</li>
+      <li>Template method can become bloated with too many hooks</li>
+    </ul></div>
+  </div>
+  <div class="vs-box"><strong>vs Strategy</strong>Template: uses <em>inheritance</em>, varies steps at compile time. Strategy: uses <em>composition</em>, swaps entire algorithm at runtime.</div>
+  <div class="tag-row"><span class="tag key b">Algorithm Skeleton</span><span class="tag">Hook Methods</span><span class="tag">CSV/JSON</span></div>
+</div>
+
+<!-- VISITOR -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.10</div><h3>Visitor</h3>
+  <div class="card-def">"Lets you add new operations to an existing object structure without modifying the classes — operations live in separate visitor objects."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Add operations without changing element classes</li><li>When structure is stable but operations grow over time</li><li>Centralize related operations across element types</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Tax: Electronics/Clothing/Groceries × GST/Import Duty</li><li>Document: Paragraphs/Images/Tables × SpellCheck/Export</li><li>Insurance: Car/Home/Health policy × Risk/Premium calc</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Visitor</strong> — interface with visit(ElementType) per type</li><li><strong>ConcreteVisitor</strong> — implements operations (TaxCalculator)</li><li><strong>Element</strong> — interface with <code>accept(visitor)</code></li><li><strong>ConcreteElement</strong> — calls <code>visitor.visit(self)</code></li></ul>
+  <p class="st">Double Dispatch</p>
+  <ul class="cl"><li>Operation resolved by <em>both</em> element type and visitor type</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Separation of concerns — operations separated from data</li>
+      <li>Easy to add new operations without modifying elements</li>
+      <li>Centralized logic, reusability</li>
+      <li>Double dispatch handles both type dimensions</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Adding new element types requires all visitors to change</li>
+      <li>Visitors may need to access internal element state — violates encapsulation</li>
+      <li>Overall complexity increases with many element types</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key b">Add Operations</span><span class="tag">Double Dispatch</span><span class="tag">Tax Calc</span></div>
+</div>
+
+<!-- CHAIN OF RESPONSIBILITY -->
+<div class="card"><div class="card-accent b"></div>
+  <div class="card-num">2.3.11</div><h3>Chain of Responsibility</h3>
+  <div class="also-known">aka "CoR"</div>
+  <div class="card-def">"Passes a request along a chain of handlers — each decides to handle or forward — decoupling sender from receiver."</div>
+  <p class="st hb">Intent</p>
+  <ul class="cl"><li>Multiple handlers can process a request</li><li>Sender doesn't know which handler will act</li><li>Add/remove/reorder handlers at runtime</li></ul>
+  <p class="st">When to Use</p>
+  <ul class="cl"><li>Customer support: L1 → L2 → Manager escalation</li><li>ATM: handle different note denominations</li><li>HTTP Middleware: auth → rate limit → route</li><li>Logging: DEBUG → INFO → WARNING → ERROR</li></ul>
+  <p class="st">Key Participants</p>
+  <ul class="cl"><li><strong>Handler</strong> — interface (set_next, handle)</li><li><strong>ConcreteHandler</strong> — handles or calls next (Level1Support)</li><li><strong>Client</strong> — builds chain and sends requests</li></ul>
+  <p class="st">Benefits &amp; Limitations</p>
+  <div class="bc-grid">
+    <div class="bc-box B"><div class="bc-title">Benefits</div><ul>
+      <li>Loose coupling — sender doesn't need to know the receiver</li>
+      <li>Enhanced flexibility — add/remove handlers easily</li>
+      <li>Improved maintainability — centralised handler logic</li>
+      <li>Reduces code duplication via shared handler behaviour</li>
+    </ul></div>
+    <div class="bc-box L"><div class="bc-title">Limitations</div><ul>
+      <li>Increased complexity with many handlers</li>
+      <li>Performance overhead — request may traverse entire chain</li>
+      <li>Debugging is difficult — hard to trace the flow</li>
+      <li>Handler order is crucial — wrong order breaks logic</li>
+      <li>Risk of unhandled requests if chain is incomplete</li>
+    </ul></div>
+  </div>
+  <div class="tag-row"><span class="tag key b">Pass the Buck</span><span class="tag">Middleware</span><span class="tag">Escalation</span></div>
+</div>
+
+</div></section><!-- /behavioural -->
+
+<!-- ═══════ QUICK REF ═══════ -->
+<section id="cheatsheet" class="cheatsheet">
+  <h2>Quick Reference — All 23 Patterns</h2>
+  <table class="cs-table">
+    <thead><tr><th>Pattern</th><th>One-liner Intent</th><th>Key Benefit</th><th>Key Limitation</th></tr></thead>
+    <tbody>
+      <tr><td class="pname c">Singleton</td><td>One instance, global access</td><td class="mp">Shared, controlled resource</td><td class="mc">Global state, hard to test</td></tr>
+      <tr><td class="pname c">Abstract Factory</td><td>Create families of related objects</td><td class="mp">Product family consistency</td><td class="mc">Hard to add new product types</td></tr>
+      <tr><td class="pname c">Factory Method</td><td>Subclass decides which object to create</td><td class="mp">Decoupled creation, OCP</td><td class="mc">Extra subclass per product type</td></tr>
+      <tr><td class="pname c">Prototype</td><td>Clone existing objects</td><td class="mp">Fast creation, flexible</td><td class="mc">Deep copy complexity</td></tr>
+      <tr><td class="pname c">Builder</td><td>Construct complex objects step-by-step</td><td class="mp">Readable, step control</td><td class="mc">More classes needed</td></tr>
+      <tr style="border-top:2px solid var(--border)">
+      <td class="pname s">Adapter</td><td>Make incompatible interfaces work</td><td class="mp">Reuse legacy code unchanged</td><td class="mc">Class proliferation</td></tr>
+      <tr><td class="pname s">Bridge</td><td>Decouple abstraction from implementation</td><td class="mp">Avoids class explosion</td><td class="mc">Added abstraction layers</td></tr>
+      <tr><td class="pname s">Composite</td><td>Tree structure — treat leaf = composite</td><td class="mp">Uniform interface, OCP</td><td class="mc">Strict type-checking harder</td></tr>
+      <tr><td class="pname s">Decorator</td><td>Add behavior by wrapping at runtime</td><td class="mp">Dynamic, no subclassing</td><td class="mc">Nested decorators confusing</td></tr>
+      <tr><td class="pname s">Facade</td><td>Simple front door to complex subsystem</td><td class="mp">Simplified interface, decoupled</td><td class="mc">Can become a God Object</td></tr>
+      <tr><td class="pname s">Flyweight</td><td>Share intrinsic state across many objects</td><td class="mp">Massive memory savings</td><td class="mc">Intrinsic/extrinsic separation needed</td></tr>
+      <tr><td class="pname s">Proxy</td><td>Surrogate that controls access</td><td class="mp">Security, lazy load, cache</td><td class="mc">Extra indirection overhead</td></tr>
+      <tr style="border-top:2px solid var(--border)">
+      <td class="pname b">Command</td><td>Encapsulate request as object</td><td class="mp">Undo/redo, queue, log</td><td class="mc">Class per command, overhead</td></tr>
+      <tr><td class="pname b">Interpreter</td><td>Grammar + interpreter for mini-language</td><td class="mp">Clean DSL evaluation</td><td class="mc">Inefficient for large grammars</td></tr>
+      <tr><td class="pname b">Iterator</td><td>Sequential traversal, hide internals</td><td class="mp">Uniform collection access</td><td class="mc">Risky modification during traversal</td></tr>
+      <tr><td class="pname b">Mediator</td><td>Centralize communication</td><td class="mp">Reduces O(n²) dependencies</td><td class="mc">Mediator becomes complex / God Object</td></tr>
+      <tr><td class="pname b">Memento</td><td>Save &amp; restore object state</td><td class="mp">Undo without exposing internals</td><td class="mc">Memory overhead for snapshots</td></tr>
+      <tr><td class="pname b">Observer</td><td>Auto-notify many on state change</td><td class="mp">Loose coupling, scalable</td><td class="mc">Memory leaks, unordered notify</td></tr>
+      <tr><td class="pname b">State</td><td>Behavior changes with internal state</td><td class="mp">Eliminates if/else, OCP</td><td class="mc">Class per state</td></tr>
+      <tr><td class="pname b">Strategy</td><td>Swap algorithm at runtime</td><td class="mp">Flexible, testable, OCP</td><td class="mc">Client must know strategies</td></tr>
+      <tr><td class="pname b">Template Method</td><td>Algorithm skeleton, subclasses fill steps</td><td class="mp">Code reuse, consistency</td><td class="mc">Tight coupling via inheritance</td></tr>
+      <tr><td class="pname b">Visitor</td><td>Add operations without touching elements</td><td class="mp">Easy new operations</td><td class="mc">Hard to add new element types</td></tr>
+      <tr><td class="pname b">Chain of Resp.</td><td>Pass request along handler chain</td><td class="mp">Loose coupling, flexible chain</td><td class="mc">Request may go unhandled</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════ COMPARISONS ═══════ -->
+<section id="comparisons" class="compare-section">
+  <h2>Commonly Confused Pairs</h2>
+  <p class="desc">Classic exam traps — know exactly why each pair is different.</p>
+  <div class="compare-grid">
+
+    <div class="cc"><h4 class="c">Factory Method vs Abstract Factory</h4>
+      <div class="cr"><span class="l">Scope</span><span class="r">One product vs Family of products</span></div>
+      <div class="cr"><span class="l">Methods</span><span class="r">One factory method vs Multiple create methods</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">OCP, decouple vs Consistent family</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">Extra subclass vs Hard to add product types</span></div>
+    </div>
+
+    <div class="cc"><h4 class="c">Factory Method vs Prototype</h4>
+      <div class="cr"><span class="l">Approach</span><span class="r">Inheritance vs Composition</span></div>
+      <div class="cr"><span class="l">Method</span><span class="r">Override factory() vs clone()</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">OCP, polymorphism vs Fast creation of similar objects</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">Extra subclass vs Deep copy complexity</span></div>
+    </div>
+
+    <div class="cc"><h4 class="s">Adapter vs Facade</h4>
+      <div class="cr"><span class="l">Intent</span><span class="r">Compatibility vs Simplification</span></div>
+      <div class="cr"><span class="l">Design time</span><span class="r">Retroactive fix vs Designed upfront</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">Reuse legacy code vs Simplified entry point</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">Class explosion vs God Object risk</span></div>
+    </div>
+
+    <div class="cc"><h4 class="s">Proxy vs Decorator</h4>
+      <div class="cr"><span class="l">Purpose</span><span class="r">Control access vs Add features</span></div>
+      <div class="cr"><span class="l">Client drives?</span><span class="r">No — proxy decides vs Yes — client stacks</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">Security, lazy load vs Dynamic behavior combos</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">Indirection overhead vs Nested clutter</span></div>
+    </div>
+
+    <div class="cc"><h4 class="s">Singleton vs Flyweight</h4>
+      <div class="cr"><span class="l">Instances</span><span class="r">One total vs One per type</span></div>
+      <div class="cr"><span class="l">Goal</span><span class="r">Coordination point vs Memory saving</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">Single shared resource vs Massive memory reduction</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">Global state issues vs Intrinsic/extrinsic split</span></div>
+    </div>
+
+    <div class="cc"><h4 class="b">State vs Strategy</h4>
+      <div class="cr"><span class="l">Who changes?</span><span class="r">Context itself vs Client explicitly</span></div>
+      <div class="cr"><span class="l">Awareness</span><span class="r">States know each other vs Strategies independent</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">FSM, eliminates if/else vs Swap algorithm at runtime</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">Class per state vs Client must know strategies</span></div>
+    </div>
+
+    <div class="cc"><h4 class="b">Template Method vs Strategy</h4>
+      <div class="cr"><span class="l">Mechanism</span><span class="r">Inheritance vs Composition</span></div>
+      <div class="cr"><span class="l">What varies</span><span class="r">Steps of one algorithm vs Entire algorithm</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">Code reuse, consistent flow vs Runtime flexibility</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">Tight coupling via inheritance vs Client must know strategies</span></div>
+    </div>
+
+    <div class="cc"><h4 class="b">Command vs Chain of Responsibility</h4>
+      <div class="cr"><span class="l">Intent</span><span class="r">Encapsulate request vs Pass until handled</span></div>
+      <div class="cr"><span class="l">Receiver known?</span><span class="r">Yes — command knows receiver vs No — chain decides</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">Undo/redo/queue vs Flexible escalation</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">Class per command vs Unhandled request risk</span></div>
+    </div>
+
+    <div class="cc"><h4 class="b">Mediator vs Observer</h4>
+      <div class="cr"><span class="l">Relationship</span><span class="r">Many-to-many vs One-to-many</span></div>
+      <div class="cr"><span class="l">Communication</span><span class="r">Bi-directional via hub vs Uni-directional notify</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">Reduces O(n²) links vs Loose coupling, scalable</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">God Object risk vs Memory leaks, unordered</span></div>
+    </div>
+
+    <div class="cc"><h4 class="b">Visitor vs Interpreter</h4>
+      <div class="cr"><span class="l">Intent</span><span class="r">Add operations to objects vs Evaluate grammar sentences</span></div>
+      <div class="cr"><span class="l">Focus</span><span class="r">Algorithm from structure vs DSL evaluation</span></div>
+      <div class="cr"><span class="l">Key benefit</span><span class="r">New operations easily vs Clean recursive eval</span></div>
+      <div class="cr"><span class="l">Key limit</span><span class="r">Hard to add element types vs Inefficient for large grammars</span></div>
+    </div>
+
+  </div>
+</section>
+
+<footer>Unit 2 · Design Patterns Study Guide · 23 Patterns · Creational · Structural · Behavioural</footer>
+</body>
+</html>
